@@ -5,33 +5,34 @@ public class AtomCalculatorNetwork : NetworkBehaviour
 {
     [Networked] public float diameter { get; set; }
     [Networked] public float height { get; set; }
+    [Networked] public float TotalAtoms { get; set; }
 
-    void Start()
+    public override void Spawned()
     {
-        if (Object.HasInputAuthority)
+        if (HasInputAuthority)
         {
             diameter = 0.3f;
             height = 0.005f;
+            TotalAtoms = CalculateAtoms(diameter, height);
         }
     }
 
-    public override void FixedUpdateNetwork()
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_UpdateValues(float newDiameter, float newHeight)
     {
-        if (Object.HasInputAuthority)
-        {
-            float totalAtoms = CalculateAtoms(diameter, height);
-            Debug.Log($"(Network) Nombre total d'atomes : {totalAtoms:E2}");
-        }
+        diameter = newDiameter;
+        height = newHeight;
+        TotalAtoms = CalculateAtoms(diameter, height);
     }
 
-    float CalculateAtoms(float diameter, float height)
+    private float CalculateAtoms(float d, float h)
     {
         float densityWater = 1000f;
         float molarMassWater = 18.015f;
         float avogadroNumber = 6.022e23f;
 
-        float radius = diameter / 2f;
-        float volume = Mathf.PI * Mathf.Pow(radius, 2) * height;
+        float radius = d / 2f;
+        float volume = Mathf.PI * Mathf.Pow(radius, 2) * h;
         float mass = volume * densityWater;
         float massInGrams = mass * 1000f;
 
