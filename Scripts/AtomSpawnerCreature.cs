@@ -24,7 +24,8 @@ public class AtomSpawnerCreature : NetworkBehaviour
 
                     if (Random.value < creatureChance)
                     {
-                        obj.AddComponent<AtomCreature>();
+                        obj.gameObject.AddComponent<AtomCreature>();
+
                     }
 
                     atom.Velocity = Random.insideUnitSphere * 0.5f;
