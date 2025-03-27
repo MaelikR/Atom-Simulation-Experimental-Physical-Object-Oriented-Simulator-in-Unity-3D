@@ -1,48 +1,79 @@
+// AtomStructure.cs — Fusion ready version
 using UnityEngine;
+using Fusion;
 
-public class AtomStructure : MonoBehaviour
+public class AtomStructure : NetworkBehaviour
 {
-    public GameObject protonPrefab;
-    public GameObject neutronPrefab;
-    public GameObject electronPrefab;
+    [SerializeField] private GameObject protonPrefab;
+    [SerializeField] private GameObject neutronPrefab;
+    [SerializeField] private GameObject electronPrefab;
 
-    public int protonCount = 1;
-    public int neutronCount = 0;
-    public int electronCount = 1;
+    [Networked] public int ProtonCount { get; set; } = 1;
+    [Networked] public int NeutronCount { get; set; } = 0;
+    [Networked] public int ElectronCount { get; set; } = 1;
 
-    public Transform nucleus;
-    public Transform electronShell;
-    public float orbitRadius = 1.5f;
-    public float orbitSpeed = 100f;
+    [SerializeField] private Transform nucleus;
+    [SerializeField] private Transform electronShell;
+    [SerializeField] private float orbitRadius = 1.5f;
+    [SerializeField] private float orbitSpeed = 100f;
 
     private GameObject[] electrons;
 
-    void Start()
+    public override void Spawned()
     {
-        // Noyau
-        for (int i = 0; i < protonCount; i++)
-            Instantiate(protonPrefab, nucleus.position + Random.insideUnitSphere * 0.2f, Quaternion.identity, nucleus);
-
-        for (int i = 0; i < neutronCount; i++)
-            Instantiate(neutronPrefab, nucleus.position + Random.insideUnitSphere * 0.2f, Quaternion.identity, nucleus);
-
-        // Électrons en orbite
-        electrons = new GameObject[electronCount];
-        for (int i = 0; i < electronCount; i++)
+        if (Object.HasStateAuthority)
         {
-            float angle = i * Mathf.PI * 2 / electronCount;
-            Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * orbitRadius;
-            electrons[i] = Instantiate(electronPrefab, electronShell.position + pos, Quaternion.identity, electronShell);
+            SpawnNucleus();
+            SpawnElectrons();
         }
     }
 
-    void Update()
+    private void SpawnNucleus()
     {
-        // Mouvement orbital des électrons
+        for (int i = 0; i < ProtonCount; i++)
+        {
+            Runner.Spawn(protonPrefab, nucleus.position + Random.insideUnitSphere * 0.2f, Quaternion.identity, Object.InputAuthority, (runner, obj) =>
+            {
+                obj.transform.SetParent(nucleus);
+            });
+        }
+
+        for (int i = 0; i < NeutronCount; i++)
+        {
+            Runner.Spawn(neutronPrefab, nucleus.position + Random.insideUnitSphere * 0.2f, Quaternion.identity, Object.InputAuthority, (runner, obj) =>
+            {
+                obj.transform.SetParent(nucleus);
+            });
+        }
+    }
+
+    private void SpawnElectrons()
+    {
+        electrons = new GameObject[ElectronCount];
+
+        for (int i = 0; i < ElectronCount; i++)
+        {
+            float angle = i * Mathf.PI * 2 / ElectronCount;
+            Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * orbitRadius;
+
+            Runner.Spawn(electronPrefab, electronShell.position + pos, Quaternion.identity, Object.InputAuthority, (runner, obj) =>
+            {
+                obj.transform.SetParent(electronShell);
+                electrons[i] = obj.gameObject;
+            });
+        }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (electrons == null || !Object.HasStateAuthority) return;
+
         for (int i = 0; i < electrons.Length; i++)
         {
             if (electrons[i] != null)
-                electrons[i].transform.RotateAround(electronShell.position, Vector3.up, orbitSpeed * Time.deltaTime);
+            {
+                electrons[i].transform.RotateAround(electronShell.position, Vector3.up, orbitSpeed * Runner.DeltaTime);
+            }
         }
     }
 }
