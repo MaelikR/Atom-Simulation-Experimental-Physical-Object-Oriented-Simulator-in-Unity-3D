@@ -1,10 +1,10 @@
 // AtomMusicSynth.cs
 using UnityEngine;
+using Fusion;
 using System.Collections.Generic;
 
-public class AtomMusicSynth : MonoBehaviour
+public class AtomMusicSynth : NetworkBehaviour
 {
-    public List<Atom> atoms;
     public AudioClip baseNote;
     public AudioSource audioPrefab;
     public float minSpeed = 1f;
@@ -12,15 +12,14 @@ public class AtomMusicSynth : MonoBehaviour
 
     private float timeSinceLastNote = 0f;
 
+    [Networked] private TickTimer noteCooldown { get; set; }
+
     void Update()
     {
-        timeSinceLastNote += Time.deltaTime;
-
-        if (timeSinceLastNote < timeBetweenNotes)
+        if (!HasStateAuthority || noteCooldown.ExpiredOrNotRunning(Runner) == false)
             return;
 
-        timeSinceLastNote = 0f;
-
+        var atoms = FindObjectsOfType<Atom>();
         foreach (var atom in atoms)
         {
             if (atom == null) continue;
@@ -28,14 +27,22 @@ public class AtomMusicSynth : MonoBehaviour
             float speed = atom.GetComponent<Rigidbody>().velocity.magnitude;
             if (speed > minSpeed)
             {
-                AudioSource a = Instantiate(audioPrefab, atom.transform.position, Quaternion.identity);
-                a.clip = baseNote;
-                a.pitch = 1f + speed * 0.1f;
-                a.volume = Mathf.Clamp01(speed / 10f);
-                a.spatialBlend = 1f; // 3D sound
-                a.Play();
-                Destroy(a.gameObject, baseNote.length);
+                RPC_PlayNote(atom.transform.position, speed);
+                noteCooldown = TickTimer.CreateFromSeconds(Runner, timeBetweenNotes);
+                break;
             }
         }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_PlayNote(Vector3 position, float speed)
+    {
+        AudioSource a = Instantiate(audioPrefab, position, Quaternion.identity);
+        a.clip = baseNote;
+        a.pitch = 1f + speed * 0.1f;
+        a.volume = Mathf.Clamp01(speed / 10f);
+        a.spatialBlend = 1f;
+        a.Play();
+        Destroy(a.gameObject, baseNote.length);
     }
 }
