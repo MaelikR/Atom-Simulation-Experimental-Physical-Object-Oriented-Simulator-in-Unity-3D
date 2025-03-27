@@ -1,10 +1,11 @@
-using System;
+using UnityEngine;
 
+[System.Serializable]
 public class LiquidBody
 {
-    public float Diameter; // m
-    public float Height;   // m
-    public float Density;  // kg/m³
+    public float Diameter; // in meters
+    public float Height;   // in meters
+    public float Density;  // in kg/m^3
     public Molecule MoleculeType;
 
     public LiquidBody(float diameter, float height, float density, Molecule molecule)
@@ -18,8 +19,8 @@ public class LiquidBody
     public double GetTotalAtoms()
     {
         double radius = Diameter / 2.0;
-        double volume = Math.PI * Math.Pow(radius, 2) * Height; // <- corrigé ici
-        double mass = volume * Density; // kg
+        double volume = Mathf.PI * Mathf.Pow((float)radius, 2) * Height; // in m^3
+        double mass = volume * Density; // in kg
         double grams = mass * 1000;
 
         double moles = grams / MoleculeType.MolarMass;
