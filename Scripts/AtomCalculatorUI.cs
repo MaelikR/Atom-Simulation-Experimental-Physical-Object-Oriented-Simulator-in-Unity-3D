@@ -1,42 +1,53 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Fusion;
 
-public class AtomCalculatorUI : MonoBehaviour
+public class AtomCalculatorUI : NetworkBehaviour
 {
-    public TMP_Text resultText;
-    public Slider diameterSlider;
-    public Slider heightSlider;
+	[SerializeField] private TMP_Text resultText;
+	[SerializeField] private Slider diameterSlider;
+	[SerializeField] private Slider heightSlider;
 
-    void Start()
-    {
-        diameterSlider.onValueChanged.AddListener(UpdateCalculation);
-        heightSlider.onValueChanged.AddListener(UpdateCalculation);
-        UpdateCalculation(0); // Calcul initial
-    }
+	private AtomCalculatorNetwork calculatorNetwork;
 
-    void UpdateCalculation(float value)
-    {
-        float diameter = diameterSlider.value;
-        float height = heightSlider.value;
+	public override void Spawned()
+	{
+		calculatorNetwork = FindObjectOfType<AtomCalculatorNetwork>();
 
-        float totalAtoms = CalculateAtoms(diameter, height);
-        resultText.text = $"Atomes : {totalAtoms:E2}";
-    }
+		if (HasInputAuthority)
+		{
+			diameterSlider.onValueChanged.AddListener(OnSliderChanged);
+			heightSlider.onValueChanged.AddListener(OnSliderChanged);
+			UpdateUI(); // Init
+		}
+		else
+		{
+			diameterSlider.interactable = false;
+			heightSlider.interactable = false;
+		}
+	}
 
-    float CalculateAtoms(float diameter, float height)
-    {
-        float densityWater = 1000f; // kg/m³
-        float molarMassWater = 18.015f; // g/mol
-        float avogadroNumber = 6.022e23f;
+	private void OnSliderChanged(float _)
+	{
+		if (calculatorNetwork != null && HasInputAuthority)
+		{
+			calculatorNetwork.RPC_UpdateValues(diameterSlider.value, heightSlider.value);
+		}
+	}
 
-        float radius = diameter / 2f;
-        float volume = Mathf.PI * Mathf.Pow(radius, 2) * height;
-        float mass = volume * densityWater;
-        float massInGrams = mass * 1000f;
+	void Update()
+	{
+		if (calculatorNetwork != null)
+		{
+			float totalAtoms = calculatorNetwork.TotalAtoms;
+			resultText.text = $"Atomes : {totalAtoms:E2}";
+		}
+	}
 
-        float molesOfWater = massInGrams / molarMassWater;
-        float numberOfMolecules = molesOfWater * avogadroNumber;
-        return numberOfMolecules * 3;
-    }
+	private void UpdateUI()
+	{
+		diameterSlider.value = calculatorNetwork.Diameter;
+		heightSlider.value = calculatorNetwork.Height;
+	}
 }
