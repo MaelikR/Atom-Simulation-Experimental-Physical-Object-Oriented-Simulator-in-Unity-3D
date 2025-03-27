@@ -3,26 +3,26 @@ using Fusion;
 
 public class AtomCalculatorNetwork : NetworkBehaviour
 {
-    [Networked] public float diameter { get; set; }
-    [Networked] public float height { get; set; }
+    [Networked] public float Diameter { get; set; }
+    [Networked] public float Height { get; set; }
     [Networked] public float TotalAtoms { get; set; }
 
     public override void Spawned()
     {
         if (HasInputAuthority)
         {
-            diameter = 0.3f;
-            height = 0.005f;
-            TotalAtoms = CalculateAtoms(diameter, height);
+            Diameter = 0.3f;
+            Height = 0.005f;
+            TotalAtoms = CalculateAtoms(Diameter, Height);
         }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_UpdateValues(float newDiameter, float newHeight)
     {
-        diameter = newDiameter;
-        height = newHeight;
-        TotalAtoms = CalculateAtoms(diameter, height);
+        Diameter = newDiameter;
+        Height = newHeight;
+        TotalAtoms = CalculateAtoms(Diameter, Height);
     }
 
     private float CalculateAtoms(float d, float h)
