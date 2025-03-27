@@ -1,3 +1,5 @@
+using System;
+
 public class LiquidBody
 {
     public float Diameter; // m
@@ -16,7 +18,7 @@ public class LiquidBody
     public double GetTotalAtoms()
     {
         double radius = Diameter / 2.0;
-        double volume = Mathf.PI * Mathf.Pow((float)radius, 2) * Height;
+        double volume = Math.PI * Math.Pow(radius, 2) * Height; // <- corrigé ici
         double mass = volume * Density; // kg
         double grams = mass * 1000;
 
