@@ -3,7 +3,11 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class FirstPersonCamera : MonoBehaviour
 {
-    public Transform cameraTransform; // Assign your camera here
+    [Header("References")]
+    public Transform cameraHolder; // Empty GameObject for pitch
+    public Transform cameraTransform; // The actual Camera
+
+    [Header("Settings")]
     public float mouseSensitivity = 2f;
     public float moveSpeed = 5f;
     public float gravity = -9.81f;
@@ -16,11 +20,21 @@ public class FirstPersonCamera : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+
+        if (cameraTransform == null)
+            cameraTransform = Camera.main.transform;
+
+        if (cameraHolder == null)
+            cameraHolder = cameraTransform.parent;
+
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
+        if (Time.timeScale == 0f) return;
+
         HandleMouseLook();
         HandleMovement();
     }
@@ -33,7 +47,10 @@ public class FirstPersonCamera : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        // X = pitch on cameraHolder (vertical)
+        cameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        // Y = yaw on body (horizontal)
         transform.Rotate(Vector3.up * mouseX);
     }
 
@@ -45,17 +62,13 @@ public class FirstPersonCamera : MonoBehaviour
         Vector3 move = transform.right * x + transform.forward * z;
         controller.Move(move * moveSpeed * Time.deltaTime);
 
-        // Gravity
         if (controller.isGrounded && velocity.y < 0)
             velocity.y = -2f;
 
+        if (Input.GetButtonDown("Jump") && controller.isGrounded)
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-
-        // Jump
-        if (Input.GetButtonDown("Jump") && controller.isGrounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
     }
 }
