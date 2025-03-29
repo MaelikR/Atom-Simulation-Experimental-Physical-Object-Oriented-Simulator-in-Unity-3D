@@ -14,7 +14,6 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
             return;
         }
 
-        // Ne PAS filtrer par LocalPlayer ici
         Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : Vector3.zero;
         spawnPosition.y = 0f;
 
@@ -23,6 +22,9 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
         if (playerObject != null)
         {
             Debug.Log($"[PlayerSpawner] Player {player.PlayerId} spawned at {spawnPosition}.");
+            
+            // ✅ Lien entre le PlayerRef et le NetworkObject
+            Runner.SetPlayerObject(player, playerObject);
         }
         else
         {
