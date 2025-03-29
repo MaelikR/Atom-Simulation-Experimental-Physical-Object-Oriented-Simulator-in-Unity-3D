@@ -1,66 +1,45 @@
+// =========================
+// Atom.cs — Improved Version
+// =========================
 using UnityEngine;
 using Fusion;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Atom : NetworkBehaviour
 {
     [Networked] public Vector3 Velocity { get; set; }
 
-    private Rigidbody _rb;
-
-    public override void Spawned()
-    {
-        _rb = GetComponent<Rigidbody>();
-    }
-using UnityEngine;
-using Fusion;
-
-public class Atom : NetworkBehaviour
-{
-    [Networked] public Vector3 Velocity { get; set; }
-
-    private Rigidbody _rb;
-
-    public override void Spawned()
-    {
-        _rb = GetComponent<Rigidbody>();
-    }
+    [Header("Atom State")]
     public float energy = 0f;
+
+    private Rigidbody _rb;
+
+    public override void Spawned()
+    {
+        _rb = GetComponent<Rigidbody>();
+        if (_rb == null)
+        {
+            Debug.LogError("No Rigidbody found on Atom");
+        }
+    }
 
     public void AddEnergy(float amount)
     {
         energy += amount;
+        // Optional: visual feedback or state change
     }
 
     public void RemoveEnergy(float amount)
     {
         energy = Mathf.Max(0f, energy - amount);
+        // Optional: visual feedback or decay effect
     }
-    public override void FixedUpdateNetwork()
-    {
-        if (HasStateAuthority && _rb != null)
-        {
-            // Simulation de mouvement simple
-            _rb.velocity = Velocity;
-        }
-        else if (_rb != null)
-        {
-            // Application côté client
-            _rb.velocity = Velocity;
-        }
-    }
-}
 
     public override void FixedUpdateNetwork()
     {
-        if (HasStateAuthority && _rb != null)
-        {
-            // Simulation de mouvement simple
-            _rb.velocity = Velocity;
-        }
-        else if (_rb != null)
-        {
-            // Application côté client
-            _rb.velocity = Velocity;
-        }
+        if (_rb == null) return;
+
+        // Apply consistent networked velocity
+        _rb.velocity = Velocity;
     }
 }
