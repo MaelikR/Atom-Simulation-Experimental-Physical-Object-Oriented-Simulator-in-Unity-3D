@@ -1,5 +1,5 @@
 // =========================
-// Atom.cs — Improved Version
+// Atom.cs — Energy Surge & Instability Version
 // =========================
 using UnityEngine;
 using Fusion;
@@ -11,6 +11,13 @@ public class Atom : NetworkBehaviour
 
     [Header("Atom State")]
     public float energy = 0f;
+    public float maxEnergy = 100f;
+    public bool isUnstable = false;
+
+    [Header("Explosion Effect")]
+    public GameObject explosionEffectPrefab;
+    public float explosionForce = 10f;
+    public float explosionRadius = 3f;
 
     private Rigidbody _rb;
 
@@ -26,20 +33,46 @@ public class Atom : NetworkBehaviour
     public void AddEnergy(float amount)
     {
         energy += amount;
-        // Optional: visual feedback or state change
+        if (energy >= maxEnergy && !isUnstable)
+        {
+            BecomeUnstable();
+        }
     }
 
     public void RemoveEnergy(float amount)
     {
         energy = Mathf.Max(0f, energy - amount);
-        // Optional: visual feedback or decay effect
+    }
+
+    void BecomeUnstable()
+    {
+        isUnstable = true;
+        TriggerExplosion();
+    }
+
+    void TriggerExplosion()
+    {
+        if (explosionEffectPrefab != null)
+        {
+            Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        Collider[] nearby = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (Collider col in nearby)
+        {
+            Rigidbody rb = col.attachedRigidbody;
+            if (rb != null)
+            {
+                rb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
+            }
+        }
+
+        Runner.Despawn(Object); // Remove the atom from the network
     }
 
     public override void FixedUpdateNetwork()
     {
         if (_rb == null) return;
-
-        // Apply consistent networked velocity
         _rb.velocity = Velocity;
     }
 }
