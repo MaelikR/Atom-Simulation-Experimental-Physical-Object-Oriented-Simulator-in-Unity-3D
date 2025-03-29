@@ -48,6 +48,6 @@ This project is the **foundation for a weird and beautiful simulator** where phy
 - Create a user-driven sandbox with sliders, toggleable laws, and molecule mutations.
 - Possibly allow networking and players interacting with their own atom fields.
 
---- (ChatGPTo4 tool PR-text x L!GhT)
+--- (ChatGPTo4 tool PR-Text X L!GhT)
 "Ready to simulate the invisible.  
 Let’s turn atoms into art."
