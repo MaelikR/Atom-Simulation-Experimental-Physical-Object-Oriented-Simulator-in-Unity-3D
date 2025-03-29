@@ -21,7 +21,6 @@ public class FusionBootstrapDebugGUI : NetworkBehaviour
 
     private void OnGUI()
     {
-        if (isClientConnected || !Object.HasInputAuthority) return;
 
         float buttonWidth = 300f;
         float buttonHeight = 50f;
