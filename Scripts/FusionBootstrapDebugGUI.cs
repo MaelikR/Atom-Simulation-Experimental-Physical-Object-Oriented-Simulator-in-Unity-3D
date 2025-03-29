@@ -23,7 +23,7 @@ public class FusionBootstrapDebugGUI : NetworkBehaviour
     {
         if (!Object.HasInputAuthority)
         {
-            enabled = false; // Désactive le script si ce n'est pas notre joueur
+            //enabled = false; // Désactive le script si ce n'est pas notre joueur
             return;
         }
     }
