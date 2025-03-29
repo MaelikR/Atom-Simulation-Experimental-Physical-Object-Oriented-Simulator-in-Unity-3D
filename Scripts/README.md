@@ -16,27 +16,32 @@ Welcome to the **Atom Simulation Project**: an experimental Unity-based simulati
 - **Magnetic fields**: pull/push atoms with physics
 - **Zoom System**: scale from puddle to nucleus in real-time
 - **Camera follow**: track individual atoms or humanoids
+- **Swimming + underwater mode** with floating particle behavior
+- **First person player** with networked controls
 
 ### 🧪 Reactions & Evolution
 - Fuse atoms to create **molecules**
 - Agglomerate atoms into a **humanoid**
 - Transform atoms into living **creatures** with behaviors
+- Atoms can **mutate**, evolve, or explode based on energy buildup
 
 ### 💣 Nuclear Simulation
 - Full **atomic bomb explosion** under water
 - Shockwaves, energy bursts, atom destabilization
 - Visual + sound feedback
+- Trigger via interaction or chain reaction
 
 ### 🌌 Artistic Touch
 - Atom glow + pulse based on energy
 - Dynamic music generation based on atom motion
 - Creatures born from atoms that swim and wander
-- Stylized visuals (VFX, shaders, trails)
+- Stylized visuals (VFX, shaders, trails, underwater fog, distortion)
 
 ### 🌐 Multiplayer Ready (Photon Fusion)
 - Fully networked atom spawning, interaction, and transformation
 - RPC-synchronized music & explosions
-- Future-ready for collaborative lab mode
+- Shared energy events and magnet fields between players
+- Modular `FusionBootstrap`, `PlayerSpawner`, and player prefab system
 
 ---
 
@@ -53,6 +58,9 @@ Welcome to the **Atom Simulation Project**: an experimental Unity-based simulati
 | `AtomSpawner.cs`          | Spawns atoms in space                   |
 | `AtomicExplosionTrigger.cs`| Simulates an atomic bomb underwater     |
 | `CameraFollowAtom.cs`     | Makes the camera follow an atom         |
+| `FirstPersonCamera.cs`    | Full player controller with swim support |
+| `PlayerSpawner.cs`        | Handles player instantiation in Fusion |
+| `FusionBootstrapDebugGUI.cs`| Simple GUI to enter the world and launch Fusion |
 
 ---
 
@@ -61,8 +69,9 @@ Welcome to the **Atom Simulation Project**: an experimental Unity-based simulati
 1. Clone the repository
 2. Open in Unity (recommended version: 2022.3+)
 3. Add your prefabs (atoms, electrons, creatures, humanoids)
-4. Run in Play Mode or with Fusion Simulation Server
-5. Use key **B** to trigger bomb 💥, or click on atoms to interact!
+4. Make sure the `NetworkRunner`, `PlayerSpawner`, and your `playerPrefab` are configured
+5. Run in Play Mode or with Fusion Simulation Server
+6. Use key **B** to trigger bomb 💥, or click on atoms to interact!
 
 ---
 
@@ -80,6 +89,8 @@ It merges scientific curiosity with poetic representation of matter.
 - Chemical bonding system
 - Periodic table integration
 - Advanced liquid deformation shaders
+- Cinematic spawn intro + teleport particles
+- Organism that forms from self-organizing atom clouds
 
 ---
 
