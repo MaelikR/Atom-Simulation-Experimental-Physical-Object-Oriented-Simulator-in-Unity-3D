@@ -1,11 +1,10 @@
 // =========================
-// FusionBootstrapDebugGUI.cs — Now Networked
+// FusionBootstrapDebugGUI.cs — Clean MonoBehaviour Version
 // =========================
 using UnityEngine;
 using Fusion;
 
-[RequireComponent(typeof(NetworkObject))]
-public class FusionBootstrapDebugGUI : NetworkBehaviour
+public class FusionBootstrapDebugGUI : MonoBehaviour
 {
     private FusionBootstrap _networkDebugStart;
     private bool isClientConnected = false;
@@ -21,6 +20,7 @@ public class FusionBootstrapDebugGUI : NetworkBehaviour
 
     private void OnGUI()
     {
+        if (isClientConnected) return;
 
         float buttonWidth = 300f;
         float buttonHeight = 50f;
