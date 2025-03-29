@@ -19,15 +19,6 @@ public class FusionBootstrapDebugGUI : NetworkBehaviour
         }
     }
 
-    public override void Spawned()
-    {
-        if (!Object.HasInputAuthority)
-        {
-            //enabled = false; // Désactive le script si ce n'est pas notre joueur
-            return;
-        }
-    }
-
     private void OnGUI()
     {
         if (isClientConnected || !Object.HasInputAuthority) return;
