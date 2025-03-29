@@ -1,6 +1,3 @@
-// =========================
-// PlayerSpawner.cs — Handles Player Spawn
-// =========================
 using Fusion;
 using UnityEngine;
 
@@ -11,14 +8,13 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 
     public void PlayerJoined(PlayerRef player)
     {
-        if (player != Runner.LocalPlayer) return;
-
         if (!playerPrefab.IsValid)
         {
             Debug.LogError("[PlayerSpawner] Player prefab not assigned or invalid.");
             return;
         }
 
+        // Ne PAS filtrer par LocalPlayer ici
         Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : Vector3.zero;
         spawnPosition.y = 0f;
 
