@@ -54,13 +54,20 @@ public class FirstPersonCamera : NetworkBehaviour
         }
     }
 
-    void Update()
+     void Update()
     {
         if (!isLocalPlayer || Time.timeScale == 0f) return;
-
+    
         CheckSwimmingState();
         HandleMouseLook();
         HandleMovement();
+        if (!Object.HasInputAuthority)
+        {
+            if (cameraHolder != null)
+                cameraHolder.gameObject.SetActive(false);
+            enabled = false;
+        }
+    
     }
 
     void CheckSwimmingState()
