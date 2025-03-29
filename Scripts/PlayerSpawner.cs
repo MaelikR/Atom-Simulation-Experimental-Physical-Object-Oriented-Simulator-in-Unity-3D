@@ -1,5 +1,5 @@
 // =========================
-// PlayerSpawner.cs — Simplified for Direct Player Spawn Only
+// PlayerSpawner.cs — Handles Player Spawn
 // =========================
 using Fusion;
 using UnityEngine;
