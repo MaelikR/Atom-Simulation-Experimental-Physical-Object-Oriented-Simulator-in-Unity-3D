@@ -1,10 +1,11 @@
 // =========================
-// FusionBootstrapDebugGUI.cs — Clean UI for Join
+// FusionBootstrapDebugGUI.cs — Now Networked
 // =========================
 using UnityEngine;
 using Fusion;
 
-public class FusionBootstrapDebugGUI : MonoBehaviour
+[RequireComponent(typeof(NetworkObject))]
+public class FusionBootstrapDebugGUI : NetworkBehaviour
 {
     private FusionBootstrap _networkDebugStart;
     private bool isClientConnected = false;
@@ -18,9 +19,18 @@ public class FusionBootstrapDebugGUI : MonoBehaviour
         }
     }
 
+    public override void Spawned()
+    {
+        if (!Object.HasInputAuthority)
+        {
+            enabled = false; // Désactive le script si ce n'est pas notre joueur
+            return;
+        }
+    }
+
     private void OnGUI()
     {
-        if (isClientConnected) return;
+        if (isClientConnected || !Object.HasInputAuthority) return;
 
         float buttonWidth = 300f;
         float buttonHeight = 50f;
