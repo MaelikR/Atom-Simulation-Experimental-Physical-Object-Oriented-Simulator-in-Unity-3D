@@ -34,6 +34,13 @@ public class FishBehavior : MonoBehaviour
     public float curiosityRadius = 3f;
     public float lightAttractionRadius = 4f;
 
+    [Header("Environmental Physics")]
+    public AnimationCurve temperatureByDepth;
+    public float minComfortTemp = 0.3f;
+    public float maxComfortTemp = 0.7f;
+    public float fleeFromColdMultiplier = 1.5f;
+    public float fleeFromHotMultiplier = 1.5f;
+
     private float age = 0f;
     private bool isDead = false;
 
@@ -181,6 +188,19 @@ public class FishBehavior : MonoBehaviour
                     response += (atom.transform.position - transform.position).normalized;
                 }
             }
+        }
+
+        // Temperature/Pressure response
+        float depthRatio = Mathf.Clamp01((waterSurfaceY - transform.position.y) / maxDepth);
+        float tempAtDepth = temperatureByDepth.Evaluate(depthRatio);
+
+        if (tempAtDepth < minComfortTemp)
+        {
+            response += Vector3.up * fleeFromColdMultiplier;
+        }
+        else if (tempAtDepth > maxComfortTemp)
+        {
+            response += Vector3.down * fleeFromHotMultiplier;
         }
 
         return response;
