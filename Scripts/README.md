@@ -1,99 +1,114 @@
-# 🌌 Atom Simulation — Interactive, Networked, and Visual Particle Simulator in Unity 3D
+# 🌌 Atom Simulation — Emergent, Networked Evolution Simulator in Unity 3D
 
-Welcome to the **Atom Simulation Project**: an experimental Unity-based simulation that merges science, art, sound, and interactivity. Built with **Photon Fusion**, this project visualizes atoms and their behavior in a networked 3D world — with explosions, transformations, and living particles.
+Welcome to the **Atom Simulation Project**: an ambitious, evolving Unity-based experiment where atoms come to life, evolve into creatures, and interact in a stylized underwater world. Built with **Photon Fusion**, this project explores **emergent life**, **environmental simulation**, and **player interaction** from the atomic scale up.
 
 ---
 
 ## ⚙️ Features
 
-### 🔬 Scientific Core
-- Real-time calculation of atoms in a liquid volume (mass, molar mass, density)
-- Modular atom structure: **protons**, **neutrons**, **electrons** (with orbital motion)
-- Dynamic energy system — atoms react to heat, cool, and magnetic forces
+### 🔬 Atomic & Molecular Foundation
+- Real-time atomic behavior: mass, energy, fusion/fission logic
+- Modular atom structure: **protons**, **neutrons**, **electrons**
+- Fusion into **molecules** and eventual transition to **living organisms**
+- Energy, magnetism, and thermal states
 
-### 🎮 Interactive Mechanics
-- **Thermal and cooling rays**: modify atoms' energy on click
-- **Magnetic fields**: pull/push atoms with physics
-- **Zoom System**: scale from puddle to nucleus in real-time
-- **Camera follow**: track individual atoms or humanoids
-- **Swimming + underwater mode** with floating particle behavior
-- **First person player** with networked controls
+### 🎮 Interactive & Physical Mechanics
+- **Magnetic fields**, **heat/cold rays**, and orbital physics
+- **Liquid simulation volume** with buoyancy and water drag
+- **First-person controller** for exploration
+- Interactive atom manipulation (click, raycast, field effects)
+- Procedural spawning and dynamic **organism mutation system**
 
-### 🧪 Reactions & Evolution
-- Fuse atoms to create **molecules**
-- Agglomerate atoms into a **humanoid**
-- Transform atoms into living **creatures** with behaviors
-- Atoms can **mutate**, evolve, or explode based on energy buildup
+### 🧪 Evolution & Behavior System
+- Atoms can transform into **LivingOrganism.cs** instances
+- Organisms mutate into **fish**, **sharks**, or other life forms
+- **FishBehavior.cs**: schooling, light-following, atom curiosity, player evasion
+- **SharkBehavior.cs**: patrol, hunt, and kill fish using proximity checks
+- Procedural aging, death, float-up system
 
-### 💣 Nuclear Simulation
-- Full **atomic bomb explosion** under water
-- Shockwaves, energy bursts, atom destabilization
-- Visual + sound feedback
-- Trigger via interaction or chain reaction
+### 🌿 Environment Dynamics
+- Temperature/pressure system using depth-based **AnimationCurve**
+- Comfortable zones for species: flee cold/hot zones
+- Environmental stimuli: follow spotlights, flee FPS player, react to atoms
+- Organisms prefer ideal depths and self-correct their swim altitude
 
-### 🌌 Artistic Touch
-- Atom glow + pulse based on energy
-- Dynamic music generation based on atom motion
-- Creatures born from atoms that swim and wander
-- Stylized visuals (VFX, shaders, trails, underwater fog, distortion)
+### 🌊 Visual & Audio Artistry
+- **Atom resonance** and glow
+- **Music generation** from atom motion
+- Morphing effects during mutation
+- Bubble trails, underwater fog, seaweed motion, fish schooling
+- Cinematic transitions, shader pulses, and energy distortion
 
-### 🌐 Multiplayer Ready (Photon Fusion)
-- Fully networked atom spawning, interaction, and transformation
-- RPC-synchronized music & explosions
-- Shared energy events and magnet fields between players
-- Modular `FusionBootstrap`, `PlayerSpawner`, and player prefab system
+### 🌐 Multiplayer-Ready (Photon Fusion)
+- Networked spawning, mutation, and explosions
+- Player sync and interactions (heat ray, magnet)
+- Modular startup with `FusionBootstrapDebugGUI.cs`
+- Scene persistence for player and atom states
 
 ---
 
 ## 📁 Key Scripts Overview
 
-| Script                     | Purpose                                 |
-|----------------------------|-----------------------------------------|
-| `Atom.cs`                 | Core atom data + energy system          |
-| `AtomStructure.cs`        | Builds atomic structure (proton/neutron/electron) |
-| `AtomMagnet.cs`           | Attracts atoms using magnetic fields    |
-| `ThermalRay.cs`           | Adds heat to atoms                      |
-| `AtomMusicSynth.cs`       | Generates audio based on atom speed     |
-| `AtomCreature.cs`         | Turns atom into a small living entity   |
-| `AtomSpawner.cs`          | Spawns atoms in space                   |
-| `AtomicExplosionTrigger.cs`| Simulates an atomic bomb underwater     |
-| `CameraFollowAtom.cs`     | Makes the camera follow an atom         |
-| `FirstPersonCamera.cs`    | Full player controller with swim support |
-| `PlayerSpawner.cs`        | Handles player instantiation in Fusion |
-| `FusionBootstrapDebugGUI.cs`| Simple GUI to enter the world and launch Fusion |
+| Script                       | Purpose                                        |
+|-----------------------------|------------------------------------------------|
+| `Atom.cs`                   | Core logic: identity, energy, responses        |
+| `LivingOrganism.cs`         | First stage of lifeform, can mutate           |
+| `FishBehavior.cs`           | Schooling AI, stimuli response, temperature    |
+| `SharkBehavior.cs`          | Predator AI: patrol, chase, attack             |
+| `AtomMagnet.cs`             | Pull/push atoms with forces                    |
+| `ThermalRay.cs`             | Raycast heat/cool atoms                       |
+| `AtomMusicSynth.cs`         | Procedural audio from atom velocity           |
+| `AtomSpawner.cs`            | Randomized atom instancing                    |
+| `AtomVisualizer.cs`         | Atom spread visualization                     |
+| `AtomCreature.cs`           | Morphs into animated creature from atom       |
+| `AtomSimulator.cs`          | Controls reaction logic (fusion/fission)      |
+| `PlayerSpawner.cs`          | Networked player instancing via Fusion        |
+| `FusionBootstrapDebugGUI.cs`| Simple startup GUI and session launcher       |
+| `CameraFollowAtom.cs`       | Follows atom or organism in-game              |
 
 ---
 
 ## 🚀 How to Run
 
 1. Clone the repository
-2. Open in Unity (recommended version: 2022.3+)
-3. Add your prefabs (atoms, electrons, creatures, humanoids)
-4. Make sure the `NetworkRunner`, `PlayerSpawner`, and your `playerPrefab` are configured
-5. Run in Play Mode or with Fusion Simulation Server
-6. Use key **B** to trigger bomb 💥, or click on atoms to interact!
+2. Open in **Unity 2022.3+**
+3. Assign prefabs (atoms, organisms, fish, player)
+4. Configure `FusionBootstrap`, `NetworkRunner`, and network prefab list
+5. Play in **Single Player** or host a **Fusion Session**
+6. Press **B** for bomb 💥 or use tools to interact with atoms
 
 ---
 
-## 🤖 Credits & Vision
+## 🤖 Simulation Flow Summary
 
-This simulation is developed as a **solo indie project** by a creator passionate about science, immersion, and stylized interactivity.  
-It merges scientific curiosity with poetic representation of matter.
-
-> “You're like a candle. You shine. The one with the atoms.”
-
----
-
-## 📌 Roadmap (Coming Soon)
-- Multiplayer co-op exploration
-- Chemical bonding system
-- Periodic table integration
-- Advanced liquid deformation shaders
-- Cinematic spawn intro + teleport particles
-- Organism that forms from self-organizing atom clouds
+1. `AtomSpawner` generates atoms randomly in space
+2. Atoms pulse, gain energy, fuse, or become `LivingOrganism`
+3. When energy depletes, the organism mutates into a random evolved prefab (e.g., `Fish` or `Shark`)
+4. Fish group, respond to stimuli, and follow ecosystem rules
+5. Sharks hunt fish via AI, resetting the life cycle
 
 ---
 
-## 📜 License
+## 📅 Roadmap & Ideas
 
-MIT — Feel free to fork, extend, remix (with credit appreciated).
+- ✨ Fish reproduction + eggs
+- ❄️ Advanced water temperature shaders
+- ✨ Atmospheric transitions (night, heat waves, storms)
+- 🧕 Mutation into humanoid form with player control
+- ⚖️ Chemistry reactions from nearby molecules
+- 🎨 UI dashboard: inspect atoms, see structure, view mutation tree
+- ✨ NPC jellyfish, plankton, or bio-luminescent entities
+- 🌐 Networked player syncing and energy share
+
+---
+
+## 💼 License
+
+MIT — Use, modify, and remix freely. Credit is appreciated but not mandatory.
+
+> "What if atoms could dream? This simulation is their journey—from chaos to consciousness."
+
+---
+
+Developed with passion by **Maëlik "Light" Renaud** — Solo Developer, Systems Dreamer, Molecular Explorer.
+
