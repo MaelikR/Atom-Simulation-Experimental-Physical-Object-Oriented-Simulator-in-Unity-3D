@@ -40,6 +40,10 @@ public class FishBehavior : MonoBehaviour
     public float maxComfortTemp = 0.7f;
     public float fleeFromColdMultiplier = 1.5f;
     public float fleeFromHotMultiplier = 1.5f;
+    [Header("Stimuli Weights")]
+    public float groupWeight = 1.0f;
+    public float stimuliWeight = 1.0f;
+    public float baseDirectionWeight = 0.8f;
 
     private float age = 0f;
     private bool isDead = false;
@@ -58,7 +62,11 @@ public class FishBehavior : MonoBehaviour
         animator = GetComponent<Animator>();
 
         ChooseNewDirection();
+
+        // Offset the initial turn timer randomly to desync
+        timeSinceLastTurn = Random.Range(0f, directionChangeInterval);
     }
+
 
     void FixedUpdate()
     {
@@ -76,16 +84,32 @@ public class FishBehavior : MonoBehaviour
 
         Vector3 stimuliDir = ComputeStimuliResponse();
         Vector3 groupDir = ComputeGroupBehavior();
-        swimDirection = (swimDirection + stimuliDir + groupDir).normalized;
+        Vector3 blendedDirection =
+        swimDirection * baseDirectionWeight +
+        groupDir * groupWeight +
+        stimuliDir * stimuliWeight;
+
+        swimDirection = blendedDirection.normalized;
+
 
         Vector3 newPosition = rb.position + swimDirection * swimSpeed * Time.fixedDeltaTime;
         float minY = waterSurfaceY - maxDepth;
         float maxY = waterSurfaceY;
         newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
+        // Doucement recentrer vers la profondeur moyenne
+        float idealDepthY = (waterSurfaceY - maxDepth * 0.5f);
+        float verticalCorrection = (idealDepthY - rb.position.y) * 0.1f;
+        newPosition.y += verticalCorrection;
+
         rb.MovePosition(newPosition);
 
-        Quaternion targetRotation = Quaternion.LookRotation(-swimDirection);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime));
+        Vector3 flatDirection = new Vector3(-swimDirection.x, 0f, -swimDirection.z);
+        if (flatDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(flatDirection);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime));
+        }
+
     }
 
     void Update()
@@ -194,14 +218,16 @@ public class FishBehavior : MonoBehaviour
         float depthRatio = Mathf.Clamp01((waterSurfaceY - transform.position.y) / maxDepth);
         float tempAtDepth = temperatureByDepth.Evaluate(depthRatio);
 
+        // Température/Profondeur douce
         if (tempAtDepth < minComfortTemp)
         {
-            response += Vector3.up * fleeFromColdMultiplier;
+            response += new Vector3(0f, 0.2f, 0f) * fleeFromColdMultiplier;
         }
         else if (tempAtDepth > maxComfortTemp)
         {
-            response += Vector3.down * fleeFromHotMultiplier;
+            response += new Vector3(0f, -0.2f, 0f) * fleeFromHotMultiplier;
         }
+
 
         return response;
     }
