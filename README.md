@@ -17,15 +17,33 @@ Instead of just solving that question with numbers, the goal is to **turn it int
 
 ---
 
-## 🧩 Key Features (WIP)
+## 🧩 Key Features (Evolving)
 
-- 🌊 **3D Simulation of Water Volume** – Starting with a virtual puddle of 30cm diameter and 0.5cm depth.
-- ⚛️ **Precise Atom Calculation** – Using molar mass, density, Avogadro’s number, and custom molecules.
-- 🧠 **Object-Oriented Molecule System** – Built with `Molecule` and `LiquidBody` classes to easily simulate different substances.
-- 📊 **Real-Time Value Display** – See the number of atoms calculated and rendered as scientific notation in-game.
-- 🧪 **Modular Design** – Built to expand into more complex simulations like ethanol, mercury, or alien matter.
-- 👁️ **Visual Layer** – Includes UI, particles, and camera orbit system for interactive exploration.
-- 🧙‍♂️ **Experimental Physics** – The project will later introduce odd or surreal laws of physics depending on data thresholds.
+### ⚛️ Atom & Molecule Simulation
+- Modular object-oriented atoms and molecules (`Atom`, `Molecule`, `LiquidBody`, etc.)
+- Real-time scientific calculation using molar mass, density, volume, and Avogadro's number
+- Visual representation of atoms with floating behavior, rotation, and glow
+
+### 🌊 Physical Volume Simulator
+- Adjustable virtual puddle (30 cm diameter, 0.5 cm depth)
+- Mass and volume-based molecule distribution
+- Dynamic pressure, temperature, and environment interactions
+
+### 🌐 Evolutionary Mechanics (NEW)
+- Atoms mutate into living **organisms** after energy depletion
+- Organisms evolve into **fish** and possibly other life forms
+- Fish behavior includes group movement, fear of player, curiosity for atoms, and attraction to light
+- Fish flee predators (e.g. **sharks**), which autonomously hunt nearby prey
+
+### 💡 Environmental Stimuli
+- Light attraction and molecular curiosity
+- Depth-based temperature curve and comfort zones
+- Fish react to cold or heat and adjust their swimming patterns accordingly
+
+### 🎮 Interactivity & Visuals
+- FPS controller to swim and explore the world
+- Click-based energy interaction with atoms
+- Dynamic fog, water shaders, particles, sound (WIP)
 
 ---
 
@@ -43,11 +61,15 @@ Instead of just solving that question with numbers, the goal is to **turn it int
 
 This project is the **foundation for a weird and beautiful simulator** where physical realism blends with imaginative rules:
 
-- Simulate different liquids and their atom structures.
-- Introduce gravity/time distortions based on atom counts.
-- Create a user-driven sandbox with sliders, toggleable laws, and molecule mutations.
-- Possibly allow networking and players interacting with their own atom fields.
+- Add fish transformation into humanoids
+- Introduce plant simulation and molecule harvesting
+- Cinematic sequences (from atom birth to organism migration)
+- Network support with synchronized biomes
+- Dynamic species behavior per biome, including reproduction & death
+- Player influence: attract, mutate, or destroy molecules
 
---- (ChatGPTo4 tool PR-Text X L!GhT)
-"Ready to simulate the invisible.  
-Let’s turn atoms into art."
+---
+
+> "Ready to simulate the invisible. Let’s turn atoms into art."
+
+*(ChatGPTo4 tool PR-Text X L!GhT — Inspired by a Darwinian ocean)*
