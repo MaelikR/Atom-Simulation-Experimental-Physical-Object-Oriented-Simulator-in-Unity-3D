@@ -15,12 +15,22 @@ public class LivingOrganism : MonoBehaviour
     [Header("Life")]
     public float maxEnergy = 100f;
     public float energyLossPerSecond = 1f;
-    public GameObject humanoidPrefab;
+
+    [Header("Mutation Settings")]
+    public GameObject[] possibleMutations;
+    public float mutationDelay = 1.5f;
+    public float mutationFloatSpeed = 0.5f;
+    public float mutationFlashSpeed = 10f;
 
     private Rigidbody rb;
     private Vector3 direction;
     private Vector3 baseScale;
     private float currentEnergy;
+
+    private bool isMutating = false;
+    private float mutationTimer = 0f;
+    private Renderer rend;
+    private Color originalColor;
 
     void Start()
     {
@@ -32,22 +42,45 @@ public class LivingOrganism : MonoBehaviour
         rb.useGravity = false;
         rb.drag = waterDrag;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        rend = GetComponentInChildren<Renderer>();
+        if (rend != null) originalColor = rend.material.color;
     }
 
     void FixedUpdate()
     {
+        if (isMutating)
+        {
+            // Petit flottement
+            rb.MovePosition(rb.position + Vector3.up * mutationFloatSpeed * Time.fixedDeltaTime);
+            return;
+        }
+
         rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
     }
 
     void Update()
     {
+        if (isMutating)
+        {
+            mutationTimer += Time.deltaTime;
+
+            if (rend != null)
+            {
+                float flicker = Mathf.Sin(Time.time * mutationFlashSpeed) * 0.5f + 0.5f;
+                rend.material.color = Color.Lerp(originalColor, Color.white, flicker);
+            }
+
+            return;
+        }
+
         Wander();
         Pulse();
         DrainEnergy();
 
         if (currentEnergy <= 0f)
         {
-            TryMutate();
+            StartMutation();
         }
     }
 
@@ -70,13 +103,19 @@ public class LivingOrganism : MonoBehaviour
         currentEnergy -= energyLossPerSecond * Time.deltaTime;
     }
 
-    void TryMutate()
+    void StartMutation()
     {
-        if (humanoidPrefab != null)
-        {
-            Instantiate(humanoidPrefab, transform.position, Quaternion.identity);
-        }
+        if (possibleMutations.Length == 0) return;
 
+        isMutating = true;
+        rb.velocity = Vector3.zero;
+        Invoke(nameof(CompleteMutation), mutationDelay);
+    }
+
+    void CompleteMutation()
+    {
+        GameObject chosenForm = possibleMutations[Random.Range(0, possibleMutations.Length)];
+        Instantiate(chosenForm, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
 }
