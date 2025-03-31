@@ -8,11 +8,21 @@ public class JellyfishBehavior : MonoBehaviour
     public float verticalOscillationSpeed = 2f;
     public float verticalOscillationHeight = 0.2f;
 
-    [Header("Reproduction")]
+    [Header("Reproduction Settings")]
     public GameObject jellyfishPrefab;
-    public float reproductionCooldown = 15f;
-    public float detectionRadius = 3f;
-    public float spawnOffset = 1f;
+    public float reproductionCooldown = 10f;
+    public float reproductionRadius = 3f;
+    public int maxPopulation = 50;
+    public float detectionRadius = 10f;
+    public float energy = 5f;
+    public float energyNeededToReproduce = 4f;
+
+    [Header("Life Cycle")]
+    public float lifespan = 60f;
+    private float age = 0f;
+
+    private float lastReproductionTime = 0f;
+    private static List<GameObject> allJellies = new List<GameObject>();
 
     [Header("Communication")]
     public float pulseInterval = 5f;
@@ -29,6 +39,9 @@ public class JellyfishBehavior : MonoBehaviour
         originalY = transform.position.y;
         timeSinceLastReproduction = Random.Range(0, reproductionCooldown);
         timeSinceLastPulse = Random.Range(0, pulseInterval);
+
+        if (!allJellies.Contains(gameObject))
+            allJellies.Add(gameObject);
 
         rend = GetComponent<Renderer>();
         if (rend != null)
@@ -47,6 +60,14 @@ public class JellyfishBehavior : MonoBehaviour
         {
             EmitPulse();
             timeSinceLastPulse = 0f;
+        }
+
+        // Lifespan
+        age += Time.deltaTime;
+        if (age >= lifespan)
+        {
+            Die();
+            return;
         }
 
         // Reproduction
@@ -81,16 +102,34 @@ public class JellyfishBehavior : MonoBehaviour
 
     void TryReproduce()
     {
-        Collider[] others = Physics.OverlapSphere(transform.position, detectionRadius);
-        foreach (var col in others)
+        if (Time.time - lastReproductionTime < reproductionCooldown) return;
+        if (energy < energyNeededToReproduce) return;
+        if (allJellies.Count >= maxPopulation) return;
+
+        Collider[] nearby = Physics.OverlapSphere(transform.position, detectionRadius);
+        int nearbyCount = 0;
+
+        foreach (var col in nearby)
         {
-            if (col.gameObject != this.gameObject && col.GetComponent<JellyfishBehavior>())
-            {
-                Vector3 spawnPos = transform.position + Random.insideUnitSphere * spawnOffset;
-                spawnPos.y = Mathf.Clamp(spawnPos.y, -100f, 0f); // pour ne pas sortir de l'eau
-                Instantiate(jellyfishPrefab, spawnPos, Quaternion.identity);
-                break;
-            }
+            if (col.GetComponent<JellyfishBehavior>() != null)
+                nearbyCount++;
         }
+
+        if (nearbyCount > 1)
+        {
+            Vector3 offset = Random.insideUnitSphere * reproductionRadius;
+            offset.y = Mathf.Clamp(offset.y, -1f, 1f);
+
+            GameObject child = Instantiate(jellyfishPrefab, transform.position + offset, Quaternion.identity);
+            allJellies.Add(child);
+            lastReproductionTime = Time.time;
+            energy = 0f;
+        }
+    }
+
+    void Die()
+    {
+        allJellies.Remove(gameObject);
+        Destroy(gameObject);
     }
 }
