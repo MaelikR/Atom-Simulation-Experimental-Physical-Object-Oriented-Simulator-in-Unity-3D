@@ -1,8 +1,6 @@
-// =========================
-// AtomStructure.cs — Improved Fusion-ready Version
-// =========================
 using UnityEngine;
 using Fusion;
+using System.Collections.Generic;
 
 public class AtomStructure : NetworkBehaviour
 {
@@ -10,6 +8,7 @@ public class AtomStructure : NetworkBehaviour
     [SerializeField] private GameObject protonPrefab;
     [SerializeField] private GameObject neutronPrefab;
     [SerializeField] private GameObject electronPrefab;
+    [SerializeField] private LineRenderer orbitRendererPrefab;
 
     [Networked] public int ProtonCount { get; set; } = 1;
     [Networked] public int NeutronCount { get; set; } = 0;
@@ -21,15 +20,18 @@ public class AtomStructure : NetworkBehaviour
     [SerializeField] private float orbitRadius = 1.5f;
     [SerializeField] private float orbitSpeed = 100f;
 
+    [Header("Electron Shells")]
+    [SerializeField] private int[] shellCapacity = { 2, 8, 18, 32 }; // K, L, M, N
+
     private GameObject[] electrons;
+    private List<LineRenderer> orbitRenderers = new();
 
     public override void Spawned()
     {
-        if (Object.HasStateAuthority)
-        {
-            SpawnNucleus();
-            SpawnElectrons();
-        }
+        if (!Object.HasStateAuthority) return;
+
+        SpawnNucleus();
+        SpawnElectrons();
     }
 
     private void SpawnNucleus()
@@ -58,18 +60,47 @@ public class AtomStructure : NetworkBehaviour
     private void SpawnElectrons()
     {
         electrons = new GameObject[ElectronCount];
+        orbitRenderers.ForEach(r => Destroy(r.gameObject));
+        orbitRenderers.Clear();
+
+        int level = 0, countInLevel = 0;
+        int capacity = shellCapacity[level];
 
         for (int i = 0; i < ElectronCount; i++)
         {
-            float angle = i * Mathf.PI * 2 / ElectronCount;
-            Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * orbitRadius;
+            if (countInLevel >= capacity)
+            {
+                level++;
+                countInLevel = 0;
+                capacity = shellCapacity[Mathf.Clamp(level, 0, shellCapacity.Length - 1)];
+            }
 
+            float angle = countInLevel * Mathf.PI * 2 / capacity;
+            float radius = orbitRadius * (level + 1);
+            Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+
+            int ei = i, lvl = level;
             Runner.Spawn(electronPrefab, electronShell.position + pos, Quaternion.identity, Object.InputAuthority, (runner, obj) =>
             {
                 obj.transform.SetParent(electronShell);
-                obj.name = $"Electron_{i}";
-                electrons[i] = obj.gameObject;
+                obj.name = $"Electron_{ei}_Shell_{lvl}";
+                electrons[ei] = obj;
             });
+
+            // Orbit visual
+            if (countInLevel == 0)
+            {
+                var orbitVisual = Instantiate(orbitRendererPrefab, electronShell);
+                orbitVisual.positionCount = 100;
+                for (int p = 0; p < 100; p++)
+                {
+                    float a = p / 100f * Mathf.PI * 2;
+                    orbitVisual.SetPosition(p, new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * radius);
+                }
+                orbitRenderers.Add(orbitVisual);
+            }
+
+            countInLevel++;
         }
     }
 
@@ -84,5 +115,17 @@ public class AtomStructure : NetworkBehaviour
                 electrons[i].transform.RotateAround(electronShell.position, Vector3.up, orbitSpeed * Runner.DeltaTime);
             }
         }
+    }
+
+    [ContextMenu("Rebuild Atom")]
+    public void RebuildAtom()
+    {
+        if (!Object.HasStateAuthority) return;
+
+        foreach (Transform t in nucleus) Destroy(t.gameObject);
+        foreach (Transform t in electronShell) Destroy(t.gameObject);
+
+        SpawnNucleus();
+        SpawnElectrons();
     }
 }
