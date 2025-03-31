@@ -1,63 +1,96 @@
 using UnityEngine;
+using System.Collections.Generic;
 
-[RequireComponent(typeof(Renderer))]
 public class JellyfishBehavior : MonoBehaviour
 {
-    [Header("Float Settings")]
-    public float floatAmplitude = 0.5f;
-    public float floatFrequency = 1f;
-    public float driftSpeed = 0.3f;
-    public float rotationSpeed = 20f;
+    [Header("Movement")]
+    public float floatSpeed = 0.5f;
+    public float verticalOscillationSpeed = 2f;
+    public float verticalOscillationHeight = 0.2f;
 
-    [Header("Vertical Limits")]
-    public float waterSurfaceY = -90f;
-    public float maxDepth = 10f;
+    [Header("Reproduction")]
+    public GameObject jellyfishPrefab;
+    public float reproductionCooldown = 15f;
+    public float detectionRadius = 3f;
+    public float spawnOffset = 1f;
 
-    [Header("Bioluminescence")]
-    public Color dayColor = Color.black;
-    public Color nightColor = new Color(0.5f, 1f, 1f);
-    public float pulseSpeed = 2f;
+    [Header("Communication")]
+    public float pulseInterval = 5f;
+    public Color communicationColor = new Color(0.8f, 0.3f, 1f);
 
-    private Material mat;
-    private Vector3 initialPosition;
-    private float timeOffset;
+    private float originalY;
+    private float timeSinceLastReproduction;
+    private float timeSinceLastPulse;
+    private Renderer rend;
+    private Color originalColor;
 
     void Start()
     {
-        initialPosition = transform.position;
-        timeOffset = Random.Range(0f, 100f); // Pour variation naturelle
-        mat = GetComponent<Renderer>().material;
-        SetGlowColor(0f); // Initial off
+        originalY = transform.position.y;
+        timeSinceLastReproduction = Random.Range(0, reproductionCooldown);
+        timeSinceLastPulse = Random.Range(0, pulseInterval);
+
+        rend = GetComponent<Renderer>();
+        if (rend != null)
+            originalColor = rend.material.GetColor("_EmissionColor");
     }
 
     void Update()
     {
-        // Flottement vertical (oscillation sinusoïdale)
-        float vertical = Mathf.Sin((Time.time + timeOffset) * floatFrequency) * floatAmplitude;
+        // Floating
+        float y = originalY + Mathf.Sin(Time.time * verticalOscillationSpeed) * verticalOscillationHeight;
+        transform.position += new Vector3(0f, (y - transform.position.y) * Time.deltaTime, 0f);
 
-        // Clamp la hauteur entre surface et profondeur
-        float minY = waterSurfaceY - maxDepth;
-        float targetY = Mathf.Clamp(initialPosition.y + vertical, minY, waterSurfaceY);
+        // Communication pulse
+        timeSinceLastPulse += Time.deltaTime;
+        if (timeSinceLastPulse >= pulseInterval)
+        {
+            EmitPulse();
+            timeSinceLastPulse = 0f;
+        }
 
-        // Déplacement fluide
-        Vector3 nextPos = transform.position;
-        nextPos.y = targetY;
-        nextPos += transform.forward * driftSpeed * Time.deltaTime;
-        transform.position = nextPos;
-
-        // Rotation douce
-        transform.Rotate(Vector3.up * rotationSpeed * Time.deltaTime);
-
-        // Glow
-        float time = DayNightCycle.CurrentTimeOfDay;
-        float intensity = (time < 0.2f || time > 0.8f) ? Mathf.Abs(Mathf.Sin(Time.time * pulseSpeed)) : 0f;
-        SetGlowColor(intensity);
+        // Reproduction
+        timeSinceLastReproduction += Time.deltaTime;
+        if (timeSinceLastReproduction >= reproductionCooldown)
+        {
+            TryReproduce();
+            timeSinceLastReproduction = 0f;
+        }
     }
 
-    void SetGlowColor(float intensity)
+    void EmitPulse()
     {
-        Color emission = Color.Lerp(dayColor, nightColor, intensity);
-        mat.SetColor("_EmissionColor", emission);
-        DynamicGI.SetEmissive(GetComponent<Renderer>(), emission);
+        if (rend != null)
+        {
+            StartCoroutine(PulseGlow());
+        }
+    }
+
+    System.Collections.IEnumerator PulseGlow()
+    {
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 2f;
+            Color pulse = Color.Lerp(originalColor, communicationColor, Mathf.Sin(t * Mathf.PI));
+            rend.material.SetColor("_EmissionColor", pulse);
+            DynamicGI.SetEmissive(rend, pulse);
+            yield return null;
+        }
+    }
+
+    void TryReproduce()
+    {
+        Collider[] others = Physics.OverlapSphere(transform.position, detectionRadius);
+        foreach (var col in others)
+        {
+            if (col.gameObject != this.gameObject && col.GetComponent<JellyfishBehavior>())
+            {
+                Vector3 spawnPos = transform.position + Random.insideUnitSphere * spawnOffset;
+                spawnPos.y = Mathf.Clamp(spawnPos.y, -100f, 0f); // pour ne pas sortir de l'eau
+                Instantiate(jellyfishPrefab, spawnPos, Quaternion.identity);
+                break;
+            }
+        }
     }
 }
