@@ -34,7 +34,18 @@ public class HealthSystem : MonoBehaviour, IDamageable
     {
         if (deathEffect != null)
         {
-            Instantiate(deathEffect, transform.position, Quaternion.identity);
+            GameObject effect = Instantiate(deathEffect, transform.position, Quaternion.identity);
+
+            // Détruire automatiquement après la durée du ParticleSystem
+            ParticleSystem ps = effect.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                Destroy(effect, ps.main.duration + ps.main.startLifetime.constantMax);
+            }
+            else
+            {
+                Destroy(effect, 3f); // fallback
+            }
         }
 
         if (audioSource != null && deathSound != null)
@@ -42,16 +53,16 @@ public class HealthSystem : MonoBehaviour, IDamageable
             audioSource.PlayOneShot(deathSound);
         }
 
-        // Tu peux remplacer ceci par une animation de mort ou flottement si nécessaire
         if (destroyOnDeath)
         {
             Destroy(gameObject);
         }
         else
         {
-            // Ex : désactiver composants
             GetComponent<Collider>().enabled = false;
-            GetComponent<Rigidbody>().isKinematic = true;
+            if (TryGetComponent<Rigidbody>(out var rb))
+                rb.isKinematic = true;
         }
     }
+
 }
