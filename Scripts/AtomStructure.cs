@@ -84,7 +84,7 @@ public class AtomStructure : NetworkBehaviour
             {
                 obj.transform.SetParent(electronShell);
                 obj.name = $"Electron_{ei}_Shell_{lvl}";
-                electrons[ei] = obj;
+                electrons[i] = obj.gameObject;
             });
 
             // Orbit visual
