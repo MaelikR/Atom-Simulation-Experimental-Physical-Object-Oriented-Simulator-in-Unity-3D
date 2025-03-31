@@ -100,6 +100,23 @@ Welcome to the **Atom Simulation Project**: an ambitious, evolving Unity-based e
 - ✨ NPC jellyfish, plankton, or bio-luminescent entities
 - 🌐 Networked player syncing and energy share
 
+🧬 Creature Interaction: Communication & Reproduction (New)
+Bioluminescent organisms (like jellyfish) now exhibit communication behaviors via pulsing lights during night cycles.
+
+When two compatible creatures come close, they can emit synchronized pulses to simulate interaction.
+
+If certain conditions are met (e.g., proximity + energy + time), a new offspring is instantiated in the simulation.
+
+Includes:
+
+Glow-based signaling system
+
+Local reproduction logic with random spawn offset
+
+Modular system for future: gender/pheromones/behaviors
+
+This system opens doors to emergent ecosystems, where life spreads, signals, and adapts in your simulated ocean.
+
 ---
 
 ## 💼 License
