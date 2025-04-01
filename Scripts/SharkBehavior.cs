@@ -10,18 +10,26 @@ public class SharkBehavior : MonoBehaviour
     public float turnSpeed = 3f;
 
     [Header("Hunting Settings")]
-    public float detectionRadius = 10f;
+    public float detectionRadius = 12f;
     public float attackDistance = 1.5f;
     public float directionChangeInterval = 4f;
+    public float visionAngle = 120f;
 
     [Header("Water Limits")]
     public float waterSurfaceY = 0f;
     public float maxDepth = 5f;
 
+    [Header("Memory")]
+    public float memoryDuration = 6f;
+
+    [Header("References")]
+    public Animator animator;
+
     private Rigidbody rb;
     private Vector3 currentDirection;
     private float timeSinceLastTurn = 0f;
     private GameObject currentTarget;
+    private float memoryTimer = 0f;
 
     void Start()
     {
@@ -42,8 +50,15 @@ public class SharkBehavior : MonoBehaviour
         }
         else
         {
-            ChaseAndAttack();
+            memoryTimer -= Time.deltaTime;
+            if (memoryTimer <= 0f)
+                currentTarget = null;
+            else
+                ChaseAndAttack();
         }
+
+        if (animator != null)
+            animator.SetFloat("Speed", currentTarget != null ? chaseSpeed : patrolSpeed);
     }
 
     void FixedUpdate()
@@ -55,7 +70,6 @@ public class SharkBehavior : MonoBehaviour
         float speed = currentTarget != null ? chaseSpeed : patrolSpeed;
 
         Vector3 nextPos = rb.position + moveDir * speed * Time.fixedDeltaTime;
-
         float minY = waterSurfaceY - maxDepth;
         float maxY = waterSurfaceY;
         nextPos.y = Mathf.Clamp(nextPos.y, minY, maxY);
@@ -91,39 +105,39 @@ public class SharkBehavior : MonoBehaviour
         {
             if (hit.TryGetComponent(out FishBehavior fish) && !fish.IsDead())
             {
-                float dist = Vector3.Distance(transform.position, fish.transform.position);
-                if (dist < closestDist)
-                {
-                    currentTarget = fish.gameObject;
-                    closestDist = dist;
-                }
+                if (IsInVision(hit.transform))
+                    TrySetTarget(fish.gameObject, ref closestDist);
             }
             else if (hit.CompareTag("Player"))
             {
-                float dist = Vector3.Distance(transform.position, hit.transform.position);
-                if (dist < closestDist && hit.TryGetComponent(out IDamageable damageable))
+                if (hit.TryGetComponent(out IDamageable damageable) && IsInVision(hit.transform))
                 {
-                    currentTarget = hit.gameObject;
-                    closestDist = dist;
-                }
-            }
-            var player = hit.GetComponent<PlayerHealth>();
-            if (player != null && !player.IsDead)
-            {
-                float dist = Vector3.Distance(transform.position, player.transform.position);
-                if (dist < closestDist)
-                {
-                    currentTarget = player.gameObject;
-                    closestDist = dist;
+                    TrySetTarget(hit.gameObject, ref closestDist);
                 }
             }
         }
     }
 
+    void TrySetTarget(GameObject target, ref float closestDist)
+    {
+        float dist = Vector3.Distance(transform.position, target.transform.position);
+        if (dist < closestDist)
+        {
+            currentTarget = target;
+            memoryTimer = memoryDuration;
+            closestDist = dist;
+        }
+    }
+
+    bool IsInVision(Transform target)
+    {
+        Vector3 directionToTarget = target.position - transform.position;
+        float angle = Vector3.Angle(transform.forward, directionToTarget);
+        return angle <= visionAngle / 2f;
+    }
+
     void ChaseAndAttack()
     {
-        if (currentTarget == null) return;
-
         float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
         if (dist <= attackDistance)
         {
@@ -133,10 +147,20 @@ public class SharkBehavior : MonoBehaviour
             }
             else if (currentTarget.TryGetComponent(out IDamageable target))
             {
-                target.TakeDamage(25f, gameObject);
+                target.TakeDamage(45f, gameObject);
             }
 
             currentTarget = null;
+        }
+    }
+
+    public void OnHearSound(Vector3 origin, GameObject source)
+    {
+        float dist = Vector3.Distance(transform.position, origin);
+        if (dist < detectionRadius)
+        {
+            currentTarget = source;
+            memoryTimer = memoryDuration;
         }
     }
 }
