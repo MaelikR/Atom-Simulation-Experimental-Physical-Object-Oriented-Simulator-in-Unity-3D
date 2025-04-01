@@ -68,6 +68,31 @@ Real-time UI inspection via AtomInspector
 
 Mutation/evolution events that change molecular content
 ---
+☢️ Atomic Bomb Module (Experimental)
+Un module immersif pour simuler une explosion atomique sous-marine dans le style de Crysis ou Half-Life.
+Parfait pour les tests de réactions extrêmes, anomalies d’énergie ou gameplay basé sur l’instabilité atomique.
+
+🔩 Scripts
+Script	Description
+AtomMagnet.cs	Attire tous les atomes dans un rayon défini via un champ magnétique simulé (magneticForce, radius). Utilise Rigidbody pour des interactions physiques crédibles.
+AtomicExplosionTrigger.cs (à venir)	Déclenche une explosion atomique après accumulation d'énergie ou surcharge. Peut être lié à une interface UI ou une séquence cinématique.
+🔬 Fonctionnement
+Chaque frame (FixedUpdate), le script scanne tous les objets tagués Atom.
+
+Si un atome est dans le rayon défini (radius), il subit une force magnétique d’attraction vers le centre du champ.
+
+Combine bien avec des effets visuels (VFX, glow, surpression, onde de choc).
+
+Peut être synchronisé en réseau avec Fusion pour destruction synchronisée sur tous les clients.
+
+🧠 Extensions possibles
+Barre de charge UI (type Halo, Metro Exodus)
+
+Effets de distorsion, lumière, et onde de choc en shader
+
+Système de sécurité désactivable ou compte à rebours
+
+Détection de masse atomique dans une zone → instabilité → boum 💥
 
 ## 📁 Key Scripts Overview
 
