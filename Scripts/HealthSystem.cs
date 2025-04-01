@@ -1,11 +1,13 @@
 using UnityEngine;
-
+using System.Collections;
 public class HealthSystem : MonoBehaviour, IDamageable
 {
     [Header("Health Settings")]
     public float maxHealth = 100f;
     public float currentHealth;
+    public GameObject healthBarPrefab;
 
+    private HealthBarUI healthBar;
     [Header("Optional")]
     public GameObject deathEffect;
     public AudioClip deathSound;
@@ -17,13 +19,20 @@ public class HealthSystem : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
+        if (healthBarPrefab)
+        {
+            var ui = Instantiate(healthBarPrefab, transform.position, Quaternion.identity);
+            healthBar = ui.GetComponent<HealthBarUI>();
+            healthBar.Setup(transform, maxHealth);
+        }
     }
 
     public void TakeDamage(float damage, GameObject attacker)
     {
         currentHealth -= damage;
         Debug.Log($"{gameObject.name} took {damage} damage from {attacker.name}. Remaining health: {currentHealth}");
-
+        if (healthBar != null)
+            healthBar.UpdateValue(currentHealth);
         if (currentHealth <= 0f)
         {
             Die();
