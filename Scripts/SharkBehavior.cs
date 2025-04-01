@@ -54,10 +54,8 @@ public class SharkBehavior : MonoBehaviour
 
         float speed = currentTarget != null ? chaseSpeed : patrolSpeed;
 
-        // Calculer la nouvelle position
         Vector3 nextPos = rb.position + moveDir * speed * Time.fixedDeltaTime;
 
-        // Empêcher de sortir de l’eau
         float minY = waterSurfaceY - maxDepth;
         float maxY = waterSurfaceY;
         nextPos.y = Mathf.Clamp(nextPos.y, minY, maxY);
@@ -91,13 +89,31 @@ public class SharkBehavior : MonoBehaviour
 
         foreach (var hit in hits)
         {
-            FishBehavior fish = hit.GetComponent<FishBehavior>();
-            if (fish != null && !fish.IsDead())
+            if (hit.TryGetComponent(out FishBehavior fish) && !fish.IsDead())
             {
                 float dist = Vector3.Distance(transform.position, fish.transform.position);
                 if (dist < closestDist)
                 {
                     currentTarget = fish.gameObject;
+                    closestDist = dist;
+                }
+            }
+            else if (hit.CompareTag("Player"))
+            {
+                float dist = Vector3.Distance(transform.position, hit.transform.position);
+                if (dist < closestDist && hit.TryGetComponent(out IDamageable damageable))
+                {
+                    currentTarget = hit.gameObject;
+                    closestDist = dist;
+                }
+            }
+            var player = hit.GetComponent<PlayerHealth>();
+            if (player != null && !player.IsDead)
+            {
+                float dist = Vector3.Distance(transform.position, player.transform.position);
+                if (dist < closestDist)
+                {
+                    currentTarget = player.gameObject;
                     closestDist = dist;
                 }
             }
@@ -111,14 +127,13 @@ public class SharkBehavior : MonoBehaviour
         float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
         if (dist <= attackDistance)
         {
-            FishBehavior fish = currentTarget.GetComponent<FishBehavior>();
-            if (fish != null)
+            if (currentTarget.TryGetComponent(out FishBehavior fish))
             {
                 fish.Die();
             }
-            else
+            else if (currentTarget.TryGetComponent(out IDamageable target))
             {
-                Destroy(currentTarget);
+                target.TakeDamage(25f, gameObject);
             }
 
             currentTarget = null;
