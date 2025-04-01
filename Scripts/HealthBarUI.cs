@@ -3,30 +3,22 @@ using UnityEngine.UI;
 
 public class HealthBarUI : MonoBehaviour
 {
-    [Header("UI Elements")]
     public Slider slider;
-
-    [Header("Settings")]
     public Vector3 offset = new Vector3(0, 2f, 0);
-
     private Transform target;
 
     public void Setup(Transform targetTransform, float maxValue)
     {
         target = targetTransform;
-
-        if (slider == null)
+        if (slider != null)
         {
-            slider = GetComponentInChildren<Slider>();
-            if (slider == null)
-            {
-                Debug.LogError("Aucun Slider trouvé dans " + gameObject.name);
-                return;
-            }
+            slider.maxValue = maxValue;
+            slider.value = maxValue;
         }
-
-        slider.maxValue = maxValue;
-        slider.value = maxValue;
+        else
+        {
+            Debug.LogError("Slider is not assigned on " + gameObject.name);
+        }
     }
 
     public void UpdateValue(float current)
@@ -40,6 +32,6 @@ public class HealthBarUI : MonoBehaviour
         if (target == null || Camera.main == null) return;
 
         transform.position = target.position + offset;
-        transform.LookAt(Camera.main.transform);
+        transform.forward = Camera.main.transform.forward;
     }
 }
