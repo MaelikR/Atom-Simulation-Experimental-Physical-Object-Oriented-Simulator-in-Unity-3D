@@ -1,84 +1,98 @@
-// AtomicExplosionTrigger.cs
 using UnityEngine;
 using Fusion;
 
 public class AtomicExplosionTrigger : NetworkBehaviour
 {
     [Header("Explosion Settings")]
-    public float energyThreshold = 100f;
-    public float explosionRadius = 10f;
-    public float explosionForce = 500f;
-    public GameObject explosionEffect;
+    public float explosionRadius = 15f;
+    public float energyAmount = 250f;
+    public float explosionForce = 1500f;
+    public float screenShakeIntensity = 1.5f;
+    public float screenShakeDuration = 1.2f;
+
+    [Header("Visual & Audio Feedback")]
+    public GameObject explosionVFX;
     public AudioClip explosionSound;
+    public Light flashLight;
+    public float flashIntensity = 8f;
+    public float flashDuration = 0.3f;
 
-    [Header("Charge Settings")]
-    public float currentEnergy = 0f;
-    public float chargeRate = 10f; // Energy per second
-    public bool autoTrigger = true;
+    [Header("UI Feedback")]
+    public GameObject chargeUI;
+    public Animator chargeAnimator;
 
-    [Header("UI")] 
-    public GameObject uiChargeBarPrefab;
-    private UIAtomicChargeBar uiBar;
+    private bool isCharging = false;
 
-    private bool hasExploded = false;
-
-    void Start()
+    public void StartCharge()
     {
-        if (uiChargeBarPrefab)
+        if (chargeAnimator != null)
         {
-            var canvas = Instantiate(uiChargeBarPrefab);
-            uiBar = canvas.GetComponent<UIAtomicChargeBar>();
-            uiBar.Setup(transform, energyThreshold);
+            chargeAnimator.SetTrigger("StartCharge");
+        }
+        isCharging = true;
+    }
+
+    public void Detonate()
+    {
+        isCharging = false;
+
+        if (chargeAnimator != null)
+        {
+            chargeAnimator.SetTrigger("Detonate");
+        }
+
+        // VFX + son
+        if (explosionVFX) Instantiate(explosionVFX, transform.position, Quaternion.identity);
+        if (explosionSound) AudioSource.PlayClipAtPoint(explosionSound, transform.position);
+
+        // Flash lumineux
+        if (flashLight != null)
+        {
+            StartCoroutine(FlashRoutine());
+        }
+
+        // Screen shake
+        var camShake = Camera.main.GetComponent<CameraShake>();
+        if (camShake != null)
+        {
+            camShake.Shake(screenShakeIntensity, screenShakeDuration);
+        }
+
+        // Affecte tous les atomes autour
+        Collider[] hitAtoms = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (var col in hitAtoms)
+        {
+            Atom atom = col.GetComponent<Atom>();
+            if (atom != null)
+            {
+                atom.AddEnergy(energyAmount); // surcharge
+                Rigidbody rb = atom.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    Vector3 dir = (atom.transform.position - transform.position).normalized;
+                    rb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
+                }
+            }
         }
     }
 
     void Update()
     {
-        if (hasExploded) return;
-
-        currentEnergy += chargeRate * Time.deltaTime;
-
-        if (uiBar)
-            uiBar.UpdateValue(currentEnergy);
-
-        if (autoTrigger && currentEnergy >= energyThreshold)
+        if (Input.GetKeyDown(KeyCode.C))
         {
-            TriggerExplosion();
+            StartCharge();
+        }
+
+        if (Input.GetKeyDown(KeyCode.B) && isCharging)
+        {
+            Detonate();
         }
     }
 
-    [ContextMenu("Trigger Explosion")]
-    public void TriggerExplosion()
+    private System.Collections.IEnumerator FlashRoutine()
     {
-        if (hasExploded) return;
-        hasExploded = true;
-
-        if (explosionEffect)
-            Instantiate(explosionEffect, transform.position, Quaternion.identity);
-
-        if (explosionSound)
-            AudioSource.PlayClipAtPoint(explosionSound, transform.position);
-
-        Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
-        foreach (var hit in hits)
-        {
-            Rigidbody rb = hit.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
-            }
-
-            if (hit.TryGetComponent(out IDamageable dmg))
-            {
-                float dist = Vector3.Distance(transform.position, hit.transform.position);
-                float falloff = Mathf.Clamp01(1f - (dist / explosionRadius));
-                dmg.TakeDamage(100f * falloff, gameObject);
-            }
-        }
-
-        if (uiBar)
-            Destroy(uiBar.gameObject);
-
-        Destroy(gameObject, 0.2f);
+        flashLight.intensity = flashIntensity;
+        yield return new WaitForSeconds(flashDuration);
+        flashLight.intensity = 0f;
     }
 }
