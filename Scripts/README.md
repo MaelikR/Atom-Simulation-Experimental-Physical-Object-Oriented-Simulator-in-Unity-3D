@@ -44,7 +44,29 @@ Welcome to the **Atom Simulation Project**: an ambitious, evolving Unity-based e
 - Player sync and interactions (heat ray, magnet)
 - Modular startup with `FusionBootstrapDebugGUI.cs`
 - Scene persistence for player and atom states
+🧬 SharkAtomSystem.cs — Molecular Composition of Creatures
+This script simulates the molecular and atomic structure of a living organism, in this case a shark. It integrates with the Atom Simulation system to make even biological creatures scientifically inspectable and decomposable.
 
+🔧 Features
+Custom Molecular Composition:
+Define a list of Molecule objects (name, atom count, molar mass) that represent the creature's body structure.
+
+Total Mass Calculation:
+Dynamically computes an approximate total molar mass of the shark based on its molecules.
+
+Debug Output:
+Use PrintComposition() to display a full breakdown of molecules and their respective atomic properties in the console.
+
+Future Expansion:
+This system is designed to work with:
+
+Decomposition effects
+
+Atom-based death visualizations
+
+Real-time UI inspection via AtomInspector
+
+Mutation/evolution events that change molecular content
 ---
 
 ## 📁 Key Scripts Overview
