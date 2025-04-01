@@ -24,6 +24,9 @@ public class JellyfishBehavior : MonoBehaviour
     private float lastReproductionTime = 0f;
     private static List<GameObject> allJellies = new List<GameObject>();
 
+    [Header("Environment")]
+    public float waterSurfaceY = -90f;
+
     [Header("Communication")]
     public float pulseInterval = 5f;
     public Color communicationColor = new Color(0.8f, 0.3f, 1f);
@@ -39,10 +42,8 @@ public class JellyfishBehavior : MonoBehaviour
         originalY = transform.position.y;
         timeSinceLastReproduction = Random.Range(0, reproductionCooldown);
         timeSinceLastPulse = Random.Range(0, pulseInterval);
-
-        if (!allJellies.Contains(gameObject))
+        if(!allJellies.Contains(gameObject))
             allJellies.Add(gameObject);
-
         rend = GetComponent<Renderer>();
         if (rend != null)
             originalColor = rend.material.GetColor("_EmissionColor");
@@ -50,9 +51,11 @@ public class JellyfishBehavior : MonoBehaviour
 
     void Update()
     {
-        // Floating
-        float y = originalY + Mathf.Sin(Time.time * verticalOscillationSpeed) * verticalOscillationHeight;
-        transform.position += new Vector3(0f, (y - transform.position.y) * Time.deltaTime, 0f);
+        // Floating movement avec clamping surface
+        float targetY = originalY + Mathf.Sin(Time.time * verticalOscillationSpeed) * verticalOscillationHeight;
+        float nextY = Mathf.Min(targetY, waterSurfaceY); // Clamp à la surface
+        transform.position = new Vector3(transform.position.x, nextY, transform.position.z);
+
 
         // Communication pulse
         timeSinceLastPulse += Time.deltaTime;
@@ -61,15 +64,15 @@ public class JellyfishBehavior : MonoBehaviour
             EmitPulse();
             timeSinceLastPulse = 0f;
         }
-
-        // Lifespan
         age += Time.deltaTime;
+
         if (age >= lifespan)
         {
             Die();
             return;
         }
 
+        TryReproduce();
         // Reproduction
         timeSinceLastReproduction += Time.deltaTime;
         if (timeSinceLastReproduction >= reproductionCooldown)
@@ -106,16 +109,17 @@ public class JellyfishBehavior : MonoBehaviour
         if (energy < energyNeededToReproduce) return;
         if (allJellies.Count >= maxPopulation) return;
 
+        // Check how many jellyfish are nearby
         Collider[] nearby = Physics.OverlapSphere(transform.position, detectionRadius);
         int nearbyCount = 0;
-
         foreach (var col in nearby)
         {
             if (col.GetComponent<JellyfishBehavior>() != null)
+
                 nearbyCount++;
         }
 
-        if (nearbyCount > 1)
+        if (nearbyCount > 1) // If there's at least another jellyfish, reproduce
         {
             Vector3 offset = Random.insideUnitSphere * reproductionRadius;
             offset.y = Mathf.Clamp(offset.y, -1f, 1f);
@@ -123,10 +127,9 @@ public class JellyfishBehavior : MonoBehaviour
             GameObject child = Instantiate(jellyfishPrefab, transform.position + offset, Quaternion.identity);
             allJellies.Add(child);
             lastReproductionTime = Time.time;
-            energy = 0f;
+            energy = 0f; // Reset energy
         }
     }
-
     void Die()
     {
         allJellies.Remove(gameObject);
