@@ -51,13 +51,6 @@ public class AtomicExplosionTrigger : NetworkBehaviour
             StartCoroutine(FlashRoutine());
         }
 
-        // Screen shake
-        var camShake = Camera.main.GetComponent<CameraShake>();
-        if (camShake != null)
-        {
-            camShake.Shake(screenShakeIntensity, screenShakeDuration);
-        }
-
         // Affecte tous les atomes autour
         Collider[] hitAtoms = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (var col in hitAtoms)
