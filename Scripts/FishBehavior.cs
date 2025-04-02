@@ -153,10 +153,18 @@ public class FishBehavior : MonoBehaviour
         rb.useGravity = false;
         rb.drag = 0.5f;
         swimDirection = Vector3.zero;
-        animator?.SetTrigger("Die");
+
+        //  Stop animator immédiatement
+        if (animator != null)
+        {
+            animator.enabled = false;
+        }
+
+        //  Visuel de poisson mort
         if (renderer != null)
             renderer.material.color = Color.gray;
 
+        //  Réaction de panique autour
         Collider[] nearby = Physics.OverlapSphere(transform.position, 4f);
         foreach (var n in nearby)
         {
@@ -168,6 +176,7 @@ public class FishBehavior : MonoBehaviour
             }
         }
     }
+
 
     void ChooseNewDirection()
     {
