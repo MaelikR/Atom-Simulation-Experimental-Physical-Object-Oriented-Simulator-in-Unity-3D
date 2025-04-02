@@ -1,16 +1,13 @@
-// =========================
-// FirstPersonCamera.cs — Network-Ready Player Controller with Swimming
-// =========================
 using UnityEngine;
-using Fusion;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(NetworkObject))]
-public class FirstPersonCamera : NetworkBehaviour
+public class FirstPersonCamera : MonoBehaviour, IDamageable
 {
     [Header("References")]
     public Transform cameraHolder;
     public Transform cameraTransform;
+    public BloodFootstepSpawner bloodStepSpawner;
 
     [Header("Movement Settings")]
     public float mouseSensitivity = 2f;
@@ -23,51 +20,129 @@ public class FirstPersonCamera : NetworkBehaviour
     public float waterSurfaceY = 0f;
     public float waterThreshold = 1f;
 
+    [Header("Health Settings")]
+    public float maxHealth = 100f;
+    private float currentHealth;
+    public float damageCooldown = 1.5f;
+    private float lastDamageTime = -999f;
+    [Header("Blood FX")]
+    public GameObject bloodImpactPrefab;
+    public Transform bloodSpawnPoint;
+
+    public Transform respawnPoint;
+    public float respawnDelay = 3f;
+    public GameObject healthBarPrefab;
+
+    private HealthBarUI healthBar;
+    private Transform healthBarInstance;
+    [Header("FX")]
+    public GameObject bloodDecalPrefab;
+
     private CharacterController controller;
     private Vector3 velocity;
     private float xRotation = 0f;
     private bool isSwimming = false;
-    private bool isLocalPlayer = false;
 
-    public override void Spawned()
+    void Start()
     {
         controller = GetComponent<CharacterController>();
+        currentHealth = maxHealth;
+        SpawnHealthBar();
 
-        if (Object.HasInputAuthority)
+        if (cameraTransform == null)
+            cameraTransform = Camera.main.transform;
+
+        if (cameraHolder == null)
+            cameraHolder = cameraTransform.parent;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    public void TakeDamage(float amount, GameObject source = null)
+    {
+        if (Time.time - lastDamageTime < damageCooldown) return;
+
+        currentHealth -= amount;
+        lastDamageTime = Time.time;
+
+     
+
+        SpawnBloodFX();
+        bloodStepSpawner?.Activate();
+
+        if (currentHealth <= 0f)
         {
-            isLocalPlayer = true;
+            Die();
+        }
 
-            if (cameraTransform == null)
-                cameraTransform = Camera.main.transform;
+        if (healthBar != null)
+            healthBar.UpdateHealth(currentHealth);
+    }
 
-            if (cameraHolder == null && cameraTransform != null)
-                cameraHolder = cameraTransform.parent;
+    void SpawnBloodFX()
+    {
+        if (bloodImpactPrefab == null) return;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+        Vector3 spawnPos = bloodSpawnPoint != null ? bloodSpawnPoint.position : transform.position + Vector3.up * 1.5f;
+        Quaternion spawnRot = Quaternion.LookRotation(-transform.forward);
+        spawnRot *= Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+        GameObject blood = Instantiate(bloodImpactPrefab, spawnPos, spawnRot);
+        blood.transform.localScale *= Random.Range(0.8f, 1.2f);
+    }
+
+
+    void Die()
+    {
+        Debug.Log("Player is dead!");
+        StartCoroutine(Respawn());
+    }
+
+    void SpawnHealthBar()
+    {
+        if (healthBarPrefab == null)
+        {
+      
+            return;
+        }
+
+        var ui = Instantiate(healthBarPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+        healthBar = ui.GetComponent<HealthBarUI>();
+        if (healthBar != null)
+            healthBar.Setup(transform, maxHealth);
+    }
+
+
+    IEnumerator Respawn()
+    {
+        yield return new WaitForSeconds(respawnDelay);
+
+        currentHealth = maxHealth;
+
+        if (respawnPoint != null)
+            transform.position = respawnPoint.position;
+        if (healthBar != null)
+        {
+            healthBar.UpdateHealth(currentHealth);
+
         }
         else
         {
-            // Disable camera on remote players
-            if (cameraHolder != null)
-                cameraHolder.gameObject.SetActive(false);
+      
+            SpawnHealthBar();
         }
     }
 
-     void Update()
+    void Update()
     {
-        if (!isLocalPlayer || Time.timeScale == 0f) return;
-    
+        if (Time.timeScale == 0f) return;
+        if (healthBar != null)
+            healthBar.UpdateHealth(currentHealth);
+
         CheckSwimmingState();
         HandleMouseLook();
         HandleMovement();
-        if (!Object.HasInputAuthority)
-        {
-            if (cameraHolder != null)
-                cameraHolder.gameObject.SetActive(false);
-            enabled = false;
-        }
-    
     }
 
     void CheckSwimmingState()
