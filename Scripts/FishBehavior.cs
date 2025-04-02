@@ -2,12 +2,16 @@ using UnityEngine;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(FishGenetics))]
 public class FishBehavior : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    public float swimSpeed = 2f;
-    public float turnSpeed = 2f;
-    public float directionChangeInterval = 3f;
+    [Header("DNA-Controlled Settings")]
+    public float swimSpeed;
+    public float turnSpeed;
+    public float curiosityRadius;
+    public float fleeRadius;
+    public float energyDrainRate;
+    private FishGenetics genetics;
 
     [Header("Water Limits")]
     public float waterSurfaceY = 0f;
@@ -32,9 +36,6 @@ public class FishBehavior : MonoBehaviour
     public List<string> interestingAtomsTags;
     public List<string> toxicAtoms;
     public List<string> edibleAtoms;
-
-    public float fleeRadius = 5f;
-    public float curiosityRadius = 3f;
     public float lightAttractionRadius = 4f;
 
     [Header("Environmental Physics")]
@@ -51,7 +52,6 @@ public class FishBehavior : MonoBehaviour
 
     [Header("Biological Settings")]
     public float energy = 1f;
-    public float energyDrainRate = 0.01f;
     public float lowEnergyThreshold = 0.3f;
 
     [Header("Water Current")]
@@ -68,17 +68,43 @@ public class FishBehavior : MonoBehaviour
     private Animator animator;
     private Renderer renderer;
 
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.drag = 1f;
+
         animator = GetComponent<Animator>();
         renderer = GetComponentInChildren<Renderer>();
-
+      
+        genetics = GetComponent<FishGenetics>();
+        if (genetics != null && genetics.dna != null)
+        {
+            swimSpeed = genetics.dna.swimSpeed;
+            turnSpeed = genetics.dna.turnSpeed;
+            curiosityRadius = genetics.dna.curiosity;
+            fleeRadius = genetics.dna.fleeDistance;
+            energyDrainRate = genetics.dna.energyEfficiency;
+            if (renderer != null)
+                renderer.material.color = genetics.dna.bodyColor;
+        }
+        ApplyDNA();
         ChooseNewDirection();
-        timeSinceLastTurn = Random.Range(0f, directionChangeInterval);
+        timeSinceLastTurn = Random.Range(0f, 3f);
+    }
+
+    void ApplyDNA()
+    {
+        if (genetics != null && genetics.dna != null)
+        {
+            swimSpeed = genetics.dna.swimSpeed;
+            turnSpeed = genetics.dna.turnSpeed;
+            curiosityRadius = genetics.dna.curiosity;
+            fleeRadius = genetics.dna.fleeDistance;
+            energyDrainRate = genetics.dna.energyEfficiency;
+        }
     }
 
     void FixedUpdate()
@@ -99,7 +125,6 @@ public class FishBehavior : MonoBehaviour
         Vector3 blendedDirection = swimDirection * baseDirectionWeight + groupDir * groupWeight + stimuliDir * stimuliWeight;
 
         swimDirection = Vector3.Slerp(swimDirection, blendedDirection.normalized, 0.1f);
-
         swimDirection.Normalize();
 
         Vector3 newPosition = rb.position + swimDirection * swimSpeed * Time.fixedDeltaTime;
@@ -126,7 +151,7 @@ public class FishBehavior : MonoBehaviour
         if (isDead) return;
 
         timeSinceLastTurn += Time.deltaTime;
-        if (timeSinceLastTurn >= directionChangeInterval)
+        if (timeSinceLastTurn >= 3f)
         {
             ChooseNewDirection();
             timeSinceLastTurn = 0f;
@@ -136,15 +161,15 @@ public class FishBehavior : MonoBehaviour
         age += Time.deltaTime;
 
         if (energy <= lowEnergyThreshold)
-        {
             swimSpeed = Mathf.Max(0.5f, swimSpeed * 0.95f);
-        }
 
         if (age >= maxLifeTime)
-        {
             Die();
-        }
+
+        UpdateDepthColor(); // mise à jour de la couleur camouflage
+
     }
+
 
     public void Die()
     {
@@ -153,18 +178,15 @@ public class FishBehavior : MonoBehaviour
         rb.useGravity = false;
         rb.drag = 0.5f;
         swimDirection = Vector3.zero;
-
-        //  Stop animator immédiatement
         if (animator != null)
         {
             animator.enabled = false;
         }
 
-        //  Visuel de poisson mort
+
         if (renderer != null)
             renderer.material.color = Color.gray;
 
-        //  Réaction de panique autour
         Collider[] nearby = Physics.OverlapSphere(transform.position, 4f);
         foreach (var n in nearby)
         {
@@ -172,11 +194,11 @@ public class FishBehavior : MonoBehaviour
             if (fish != null && !fish.IsDead())
             {
                 Vector3 panicDir = (fish.transform.position - transform.position).normalized;
-                fish.swimDirection += panicDir * 1.5f;
+                fish.AddPanicForce(panicDir * 1.5f);
+
             }
         }
     }
-
 
     void ChooseNewDirection()
     {
@@ -204,7 +226,6 @@ public class FishBehavior : MonoBehaviour
 
             cohesion += neighbor.transform.position;
             alignment += neighbor.GetComponent<Rigidbody>().velocity;
-
             if (distance < separationRadius)
                 separation -= toNeighbor / distance;
 
@@ -218,6 +239,24 @@ public class FishBehavior : MonoBehaviour
         separation = separation.normalized * separationWeight;
 
         return cohesion + alignment + separation;
+    }
+    // Ajoute ceci à l’intérieur de ta classe FishBehavior (si pas déjà fait)
+    public void AddPanicForce(Vector3 panicDirection)
+    {
+        swimDirection += panicDirection;
+    }
+    void UpdateDepthColor()
+    {
+        if (renderer == null) return;
+
+        float depthRatio = Mathf.Clamp01((waterSurfaceY - transform.position.y) / maxDepth);
+
+        // Camouflage de profondeur : surface claire profondeur sombre
+        Color shallowColor = new Color(1f, 0.5f, 0.5f); // rose clair en surface
+        Color deepColor = new Color(0f, 0.2f, 0.4f);    // bleu foncé en profondeur
+
+        Color adaptedColor = Color.Lerp(shallowColor, deepColor, depthRatio);
+        renderer.material.color = adaptedColor;
     }
 
     Vector3 ComputeStimuliResponse()
@@ -239,6 +278,8 @@ public class FishBehavior : MonoBehaviour
                     response += (atom.transform.position - transform.position).normalized;
             }
         }
+        
+
 
         foreach (string tag in toxicAtoms)
         {
