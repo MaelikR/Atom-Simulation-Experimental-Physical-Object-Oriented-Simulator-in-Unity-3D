@@ -26,10 +26,13 @@ public class FishBehavior : MonoBehaviour
     public float deadRotationSpeed = 0.2f;
     public bool IsDead() => isDead;
 
-    [Header("Environmental Stimuli")]
+    [Header("Stimuli & Environment")]
     public Transform player;
     public Transform lightSource;
     public List<string> interestingAtomsTags;
+    public List<string> toxicAtoms;
+    public List<string> edibleAtoms;
+
     public float fleeRadius = 5f;
     public float curiosityRadius = 3f;
     public float lightAttractionRadius = 4f;
@@ -40,18 +43,30 @@ public class FishBehavior : MonoBehaviour
     public float maxComfortTemp = 0.7f;
     public float fleeFromColdMultiplier = 1.5f;
     public float fleeFromHotMultiplier = 1.5f;
+
     [Header("Stimuli Weights")]
     public float groupWeight = 1.0f;
     public float stimuliWeight = 1.0f;
     public float baseDirectionWeight = 0.8f;
+
+    [Header("Biological Settings")]
+    public float energy = 1f;
+    public float energyDrainRate = 0.01f;
+    public float lowEnergyThreshold = 0.3f;
+
+    [Header("Water Current")]
+    public Vector3 currentDirection = new Vector3(0.2f, 0f, 0.1f);
+    public float currentStrength = 0.2f;
 
     private float age = 0f;
     private bool isDead = false;
 
     private Rigidbody rb;
     private Vector3 swimDirection;
+    private Vector3 lastDirection;
     private float timeSinceLastTurn;
     private Animator animator;
+    private Renderer renderer;
 
     void Start()
     {
@@ -60,13 +75,11 @@ public class FishBehavior : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.drag = 1f;
         animator = GetComponent<Animator>();
+        renderer = GetComponentInChildren<Renderer>();
 
         ChooseNewDirection();
-
-        // Offset the initial turn timer randomly to desync
         timeSinceLastTurn = Random.Range(0f, directionChangeInterval);
     }
-
 
     void FixedUpdate()
     {
@@ -76,7 +89,6 @@ public class FishBehavior : MonoBehaviour
             Vector3 nextPos = rb.position + floatUp * Time.fixedDeltaTime;
             nextPos.y = Mathf.Min(nextPos.y, waterSurfaceY);
             rb.MovePosition(nextPos);
-
             Quaternion tilt = Quaternion.Euler(0f, rb.rotation.eulerAngles.y, 90f);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, tilt, deadRotationSpeed * Time.fixedDeltaTime));
             return;
@@ -84,19 +96,17 @@ public class FishBehavior : MonoBehaviour
 
         Vector3 stimuliDir = ComputeStimuliResponse();
         Vector3 groupDir = ComputeGroupBehavior();
-        Vector3 blendedDirection =
-        swimDirection * baseDirectionWeight +
-        groupDir * groupWeight +
-        stimuliDir * stimuliWeight;
+        Vector3 blendedDirection = swimDirection * baseDirectionWeight + groupDir * groupWeight + stimuliDir * stimuliWeight;
 
-        swimDirection = blendedDirection.normalized;
+        swimDirection = Vector3.Slerp(swimDirection, blendedDirection.normalized, 0.1f);
 
+        swimDirection.Normalize();
 
         Vector3 newPosition = rb.position + swimDirection * swimSpeed * Time.fixedDeltaTime;
         float minY = waterSurfaceY - maxDepth;
         float maxY = waterSurfaceY;
         newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
-        // Doucement recentrer vers la profondeur moyenne
+
         float idealDepthY = (waterSurfaceY - maxDepth * 0.5f);
         float verticalCorrection = (idealDepthY - rb.position.y) * 0.1f;
         newPosition.y += verticalCorrection;
@@ -109,20 +119,27 @@ public class FishBehavior : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(flatDirection);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime));
         }
-
     }
 
     void Update()
     {
+        if (isDead) return;
+
         timeSinceLastTurn += Time.deltaTime;
         if (timeSinceLastTurn >= directionChangeInterval)
         {
             ChooseNewDirection();
             timeSinceLastTurn = 0f;
         }
-        if (isDead) return;
 
+        energy -= energyDrainRate * Time.deltaTime;
         age += Time.deltaTime;
+
+        if (energy <= lowEnergyThreshold)
+        {
+            swimSpeed = Mathf.Max(0.5f, swimSpeed * 0.95f);
+        }
+
         if (age >= maxLifeTime)
         {
             Die();
@@ -136,22 +153,33 @@ public class FishBehavior : MonoBehaviour
         rb.useGravity = false;
         rb.drag = 0.5f;
         swimDirection = Vector3.zero;
-        if (animator != null)
+        animator?.SetTrigger("Die");
+        if (renderer != null)
+            renderer.material.color = Color.gray;
+
+        Collider[] nearby = Physics.OverlapSphere(transform.position, 4f);
+        foreach (var n in nearby)
         {
-            animator.enabled = false;
+            var fish = n.GetComponent<FishBehavior>();
+            if (fish != null && !fish.IsDead())
+            {
+                Vector3 panicDir = (fish.transform.position - transform.position).normalized;
+                fish.swimDirection += panicDir * 1.5f;
+            }
         }
     }
 
     void ChooseNewDirection()
     {
-        swimDirection = Random.onUnitSphere;
-        swimDirection.y = Mathf.Clamp(swimDirection.y, -0.3f, 0.3f);
+        Vector3 randomDir = Random.onUnitSphere;
+        randomDir.y = Mathf.Clamp(randomDir.y, -0.3f, 0.3f);
+        swimDirection = Vector3.Slerp(lastDirection, randomDir, 0.6f);
+        lastDirection = swimDirection;
     }
 
     Vector3 ComputeGroupBehavior()
     {
         Collider[] neighbors = Physics.OverlapSphere(transform.position, neighborRadius);
-
         Vector3 cohesion = Vector3.zero;
         Vector3 alignment = Vector3.zero;
         Vector3 separation = Vector3.zero;
@@ -169,9 +197,7 @@ public class FishBehavior : MonoBehaviour
             alignment += neighbor.GetComponent<Rigidbody>().velocity;
 
             if (distance < separationRadius)
-            {
                 separation -= toNeighbor / distance;
-            }
 
             count++;
         }
@@ -189,45 +215,55 @@ public class FishBehavior : MonoBehaviour
     {
         Vector3 response = Vector3.zero;
 
-        // Flee from player
         if (player != null && Vector3.Distance(transform.position, player.position) < fleeRadius)
-        {
             response += (transform.position - player.position).normalized * 2f;
-        }
 
-        // Follow light
         if (lightSource != null && Vector3.Distance(transform.position, lightSource.position) < lightAttractionRadius)
-        {
             response += (lightSource.position - transform.position).normalized * 1.5f;
-        }
 
-        // Curious toward atoms
         foreach (string tag in interestingAtomsTags)
         {
             GameObject[] atoms = GameObject.FindGameObjectsWithTag(tag);
             foreach (GameObject atom in atoms)
             {
                 if (Vector3.Distance(transform.position, atom.transform.position) < curiosityRadius)
-                {
                     response += (atom.transform.position - transform.position).normalized;
-                }
             }
         }
 
-        // Temperature/Pressure response
+        foreach (string tag in toxicAtoms)
+        {
+            GameObject[] hazards = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject hazard in hazards)
+            {
+                if (Vector3.Distance(transform.position, hazard.transform.position) < curiosityRadius)
+                    response += (transform.position - hazard.transform.position).normalized * 2f;
+            }
+        }
+
+        foreach (string tag in edibleAtoms)
+        {
+            GameObject[] food = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject item in food)
+            {
+                if (Vector3.Distance(transform.position, item.transform.position) < curiosityRadius)
+                    response += (item.transform.position - transform.position).normalized;
+            }
+        }
+
         float depthRatio = Mathf.Clamp01((waterSurfaceY - transform.position.y) / maxDepth);
         float tempAtDepth = temperatureByDepth.Evaluate(depthRatio);
 
-        // Température/Profondeur douce
-        if (tempAtDepth < minComfortTemp)
+        if (renderer != null)
         {
-            response += new Vector3(0f, 0.2f, 0f) * fleeFromColdMultiplier;
-        }
-        else if (tempAtDepth > maxComfortTemp)
-        {
-            response += new Vector3(0f, -0.2f, 0f) * fleeFromHotMultiplier;
+            float ratio = Mathf.InverseLerp(minComfortTemp, maxComfortTemp, tempAtDepth);
+            renderer.material.color = Color.Lerp(Color.blue, Color.red, ratio);
         }
 
+        if (tempAtDepth < minComfortTemp)
+            response += new Vector3(0f, 0.2f, 0f) * fleeFromColdMultiplier;
+        else if (tempAtDepth > maxComfortTemp)
+            response += new Vector3(0f, -0.2f, 0f) * fleeFromHotMultiplier;
 
         return response;
     }
