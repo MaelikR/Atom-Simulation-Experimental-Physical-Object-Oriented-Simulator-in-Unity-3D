@@ -108,13 +108,19 @@ public class SharkBehavior : MonoBehaviour
                 if (IsInVision(hit.transform))
                     TrySetTarget(fish.gameObject, ref closestDist);
             }
-            else if (hit.CompareTag("Player"))
+            else if (hit.CompareTag("Player") && IsInVision(hit.transform))
             {
-                if (hit.TryGetComponent(out IDamageable damageable) && IsInVision(hit.transform))
+                // Toujours chercher le script sur le GameObject principal ou ses enfants
+                FirstPersonCamera player = hit.GetComponent<FirstPersonCamera>();
+                if (player == null)
+                    player = hit.GetComponentInChildren<FirstPersonCamera>();
+
+                if (player != null)
                 {
                     TrySetTarget(hit.gameObject, ref closestDist);
                 }
             }
+
         }
     }
 
@@ -141,16 +147,32 @@ public class SharkBehavior : MonoBehaviour
         float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
         if (dist <= attackDistance)
         {
+   
+            Debug.DrawLine(transform.position, currentTarget.transform.position, Color.red, 1f);
+     
             if (currentTarget.TryGetComponent(out FishBehavior fish))
             {
                 fish.Die();
             }
-            else if (currentTarget.TryGetComponent(out IDamageable target))
+
+            if (currentTarget.TryGetComponent(out FirstPersonCamera player))
             {
-                target.TakeDamage(45f, gameObject);
+      
+                player.TakeDamage(55f, gameObject); // ou ReceiveDamage()
             }
 
             currentTarget = null;
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            if (collision.gameObject.TryGetComponent(out FirstPersonCamera player))
+            {
+                player.TakeDamage(55f, gameObject);
+            }
         }
     }
 
