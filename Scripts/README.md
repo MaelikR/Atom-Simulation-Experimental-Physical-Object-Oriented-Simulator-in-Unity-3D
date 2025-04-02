@@ -84,6 +84,51 @@ Si un atome est dans le rayon défini (radius), il subit une force magnétique d
 Combine bien avec des effets visuels (VFX, glow, surpression, onde de choc).
 
 Peut être synchronisé en réseau avec Fusion pour destruction synchronisée sur tous les clients.
+# 🔮 Non-Euclidean Quantum Portal System
+
+This system allows for **non-Euclidean space traversal** inside Unity by connecting two portals that simulate:
+
+- 📍 Circular space folding (loop back to origin)
+- 🔄 Spatial axis rotation (changes movement orientation)
+- 🧠 Perception shifts (support for quantum camera tricks later)
+
+## 🚀 Features
+
+- **Linked Portals**: When the player enters one portal, they are transported to the linked one with a rotation offset.
+- **Axis Rotation**: You can apply rotation during teleportation to simulate bending space.
+- **Topological Looping**: Portals can connect back to themselves or form complex shapes.
+
+## 📦 How to Use
+
+1. **Setup Portals**:
+    - Create two GameObjects (`Portal_A`, `Portal_B`).
+    - Add the `QuantumPortal.cs` script to both.
+    - Assign each other's `linkedPortal` field in the Inspector.
+
+2. **Collider**:
+    - Add a `BoxCollider` or `SphereCollider` to each portal.
+    - Set it to **Trigger**.
+
+3. **Player**:
+    - Tag your player as `"Player"`.
+    - Make sure the player uses a `CharacterController` or Rigidbody for clean teleportation.
+
+4. **Optional Rotation**:
+    - You can define a custom `Vector3` rotation offset in the script to simulate axis bending.
+
+## 🧪 Future Extensions
+
+- Non-linear time delay
+- Visual distortion shaders on entry
+- Multi-angle camera rendering (quantum superposition style)
+
+## 🧠 Notes
+
+This portal system is inspired by **quantum spatial anomalies** and aims to break traditional Euclidean rules inside a 3D environment.
+
+---
+
+Created with 💡 by Light | Eldora Simulation
 
 🧠 Extensions possibles
 Barre de charge UI (type Halo, Metro Exodus)
