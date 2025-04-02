@@ -30,9 +30,9 @@ public class HealthSystem : MonoBehaviour, IDamageable
     public void TakeDamage(float damage, GameObject attacker)
     {
         currentHealth -= damage;
-        Debug.Log($"{gameObject.name} took {damage} damage from {attacker.name}. Remaining health: {currentHealth}");
+      
         if (healthBar != null)
-            healthBar.UpdateValue(currentHealth);
+            healthBar.UpdateHealth(currentHealth);
         if (currentHealth <= 0f)
         {
             Die();
