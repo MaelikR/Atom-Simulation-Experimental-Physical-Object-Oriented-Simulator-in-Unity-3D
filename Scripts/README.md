@@ -185,14 +185,12 @@ Extend QuantumAnomalyZone to affect atoms individually (e.g., vibrate faster).
 
 “Time bends here... as if the atoms themselves are dreaming.”
 
-Created with 💡 by Maëlik "Light" Renaud
-— Temporal Designer & Molecular Dreamweaver
+
 ## 🌍 License
 **MIT** — Free to use, remix, and publish. Credit appreciated.
 
 > "What if atoms could dream? This simulation is their journey—from chaos to consciousness."
 
 ---
-
-Crafted with soul by **Maëlik "Light" Renaud** — Solo Dev, Molecular Dreamer, Quantum World Builder.
-
+Created with 💡 by Maëlik "Light" Renaud
+— Temporal Designer & Molecular Dreamweaver
