@@ -1,74 +1,124 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections;
 
 public class IntroCinematic : MonoBehaviour
 {
     public Camera cinematicCamera;
-    public Transform cameraPathStart;
-    public Transform cameraPathEnd;
-    public float travelDuration = 10f;
-    public GameObject playerController;
-    public CanvasGroup fadeCanvas;
-    public TextMeshProUGUI cinematicText;
+    public Transform startPoint;
+    public Transform endPoint;
+    public float travelSpeed = 2f;
 
-    [TextArea(4, 10)]
+    public Text dialogueText;
+    public CanvasGroup canvasGroup;
     public string[] poeticLines;
-    public float textDisplayTime = 4f;
+    public float textDelay = 6f;
 
-    private void Start()
+    public GameObject playerController;
+    public GameObject introUI;
+    public AudioSource backgroundMusic;
+    public AudioClip pianoIntro;
+
+    private VoiceOnControl voiceScript;
+    private bool hasStarted = false;
+
+    void Start()
     {
+        StartCoroutine(PreloadAssets());
+
+        cinematicCamera.transform.position = startPoint.position;
+        cinematicCamera.transform.rotation = startPoint.rotation;
+        playerController.SetActive(false);
+        introUI.SetActive(true);
+
+        voiceScript = FindObjectOfType<VoiceOnControl>();
+
+        canvasGroup.alpha = 0;
         StartCoroutine(PlayIntro());
+    }
+
+    IEnumerator PreloadAssets()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        GameObject preloadButterfly = Instantiate(Resources.Load<GameObject>("Prefabs/Butterfly"));
+        preloadButterfly.SetActive(false);
+        yield return null;
+
+        GameObject preloadAtomFX = Instantiate(Resources.Load<GameObject>("Particles/AtomAura"));
+        preloadAtomFX.SetActive(false);
+        yield return null;
+
+        if (pianoIntro != null && backgroundMusic != null)
+        {
+            backgroundMusic.clip = pianoIntro;
+            backgroundMusic.Play();
+        }
     }
 
     IEnumerator PlayIntro()
     {
-        playerController.SetActive(false);
-        cinematicCamera.gameObject.SetActive(true);
+        hasStarted = true;
 
-        yield return StartCoroutine(FadeFromBlack());
-        yield return StartCoroutine(TravelCamera());
-        yield return StartCoroutine(DisplayPoeticText());
+        StartCoroutine(ShowPoeticLines());
 
-        cinematicCamera.gameObject.SetActive(false);
-        playerController.SetActive(true);
-    }
+        float journeyLength = Vector3.Distance(startPoint.position, endPoint.position);
+        float startTime = Time.time;
 
-    IEnumerator FadeFromBlack()
-    {
-        fadeCanvas.alpha = 1;
-        while (fadeCanvas.alpha > 0)
+        while (Vector3.Distance(cinematicCamera.transform.position, endPoint.position) > 0.1f)
         {
-            fadeCanvas.alpha -= Time.deltaTime;
+            float distCovered = (Time.time - startTime) * travelSpeed;
+            float fraction = distCovered / journeyLength;
+            cinematicCamera.transform.position = Vector3.Lerp(startPoint.position, endPoint.position, fraction);
+            cinematicCamera.transform.rotation = Quaternion.Slerp(startPoint.rotation, endPoint.rotation, fraction);
             yield return null;
         }
-        fadeCanvas.blocksRaycasts = false;
+
+        yield return new WaitForSeconds(2f);
+        EndIntro();
     }
 
-    IEnumerator TravelCamera()
+    IEnumerator ShowPoeticLines()
+    {
+        foreach (string line in poeticLines)
+        {
+            yield return StartCoroutine(FadeInText(line));
+            yield return new WaitForSeconds(textDelay);
+            yield return StartCoroutine(FadeOutText());
+        }
+    }
+
+    IEnumerator FadeInText(string line)
+    {
+        dialogueText.text = line;
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / 1.5f;
+            canvasGroup.alpha = Mathf.SmoothStep(0, 1, t);
+            yield return null;
+        }
+    }
+
+    IEnumerator FadeOutText()
     {
         float t = 0f;
         while (t < 1f)
         {
-            t += Time.deltaTime / travelDuration;
-            cinematicCamera.transform.position = Vector3.Lerp(cameraPathStart.position, cameraPathEnd.position, t);
-            cinematicCamera.transform.LookAt(Vector3.Lerp(cameraPathStart.forward, cameraPathEnd.forward, t));
+            t += Time.deltaTime / 1.5f;
+            canvasGroup.alpha = Mathf.SmoothStep(1, 0, t);
             yield return null;
         }
+        dialogueText.text = "";
     }
 
-    IEnumerator DisplayPoeticText()
+    void EndIntro()
     {
-        cinematicText.gameObject.SetActive(true);
+        cinematicCamera.gameObject.SetActive(false);
+        playerController.SetActive(true);
+        voiceScript?.OnPlayerControlActivated();
+        introUI.SetActive(false);
 
-        foreach (string line in poeticLines)
-        {
-            cinematicText.text = line;
-            yield return new WaitForSeconds(textDisplayTime);
-        }
-
-        cinematicText.text = "";
-        cinematicText.gameObject.SetActive(false);
+        Resources.UnloadUnusedAssets();
     }
 }
