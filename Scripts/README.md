@@ -1,223 +1,231 @@
-# 🌌 Atom Simulation — Emergent, Networked Evolution Simulator in Unity 3D
+🌌 Atom Simulation — Emergent, Networked Evolution Simulator in Unity 3D
 
-Welcome to the **Atom Simulation Project**: an ambitious, evolving Unity-based experiment where atoms come to life, evolve into creatures, and interact in a stylized underwater world. Built with **Photon Fusion**, this project explores **emergent life**, **environmental simulation**, and **player interaction** from the atomic scale up.
+Welcome to the Atom Simulation Project: an ambitious, evolving Unity-based experiment where atoms come to life, evolve into creatures, and interact in a stylized underwater and open-world environment. Built with Photon Fusion, this project explores emergent life, environmental simulation, networking, and quantum traversal from atomic chaos to conscious evolution.
 
----
+⚙️ Features
 
-## ⚙️ Features
+🔬 Atomic & Molecular Foundation
 
-### 🔬 Atomic & Molecular Foundation
-- Real-time atomic behavior: mass, energy, fusion/fission logic
-- Modular atom structure: **protons**, **neutrons**, **electrons**
-- Fusion into **molecules** and eventual transition to **living organisms**
-- Energy, magnetism, and thermal states
+Real-time atomic behavior: mass, energy, fusion/fission logic
 
-### 🎮 Interactive & Physical Mechanics
-- **Magnetic fields**, **heat/cold rays**, and orbital physics
-- **Liquid simulation volume** with buoyancy and water drag
-- **First-person controller** for exploration
-- Interactive atom manipulation (click, raycast, field effects)
-- Procedural spawning and dynamic **organism mutation system**
+Modular atom structure: protons, neutrons, electrons
 
-### 🧪 Evolution & Behavior System
-- Atoms can transform into **LivingOrganism.cs** instances
-- Organisms mutate into **fish**, **sharks**, or other life forms
-- **FishBehavior.cs**: schooling, light-following, atom curiosity, player evasion
-- **SharkBehavior.cs**: patrol, hunt, and kill fish using proximity checks
-- Procedural aging, death, float-up system
+Fusion into molecules and eventual transition to living organisms
 
-### 🌿 Environment Dynamics
-- Temperature/pressure system using depth-based **AnimationCurve**
-- Comfortable zones for species: flee cold/hot zones
-- Environmental stimuli: follow spotlights, flee FPS player, react to atoms
-- Organisms prefer ideal depths and self-correct their swim altitude
+Energy, magnetism, and thermal states
 
-### 🌊 Visual & Audio Artistry
-- **Atom resonance** and glow
-- **Music generation** from atom motion
-- Morphing effects during mutation
-- Bubble trails, underwater fog, seaweed motion, fish schooling
-- Cinematic transitions, shader pulses, and energy distortion
+🎮 Interactive & Physical Mechanics
 
-### 🌐 Multiplayer-Ready (Photon Fusion)
-- Networked spawning, mutation, and explosions
-- Player sync and interactions (heat ray, magnet)
-- Modular startup with `FusionBootstrapDebugGUI.cs`
-- Scene persistence for player and atom states
-🧬 SharkAtomSystem.cs — Molecular Composition of Creatures
-This script simulates the molecular and atomic structure of a living organism, in this case a shark. It integrates with the Atom Simulation system to make even biological creatures scientifically inspectable and decomposable.
+Magnetic fields, heat/cold rays, and orbital physics
 
-🔧 Features
-Custom Molecular Composition:
-Define a list of Molecule objects (name, atom count, molar mass) that represent the creature's body structure.
+Liquid simulation volume with buoyancy and water drag
 
-Total Mass Calculation:
-Dynamically computes an approximate total molar mass of the shark based on its molecules.
+First-person controller for exploration
 
-Debug Output:
-Use PrintComposition() to display a full breakdown of molecules and their respective atomic properties in the console.
+Interactive atom manipulation (click, raycast, field effects)
 
-Future Expansion:
-This system is designed to work with:
+Procedural spawning and dynamic organism mutation system
 
-Decomposition effects
+🧪 Evolution & Behavior System
 
-Atom-based death visualizations
+Atoms can transform into LivingOrganism.cs instances
 
-Real-time UI inspection via AtomInspector
+Organisms mutate into fish, sharks, or other life forms
 
-Mutation/evolution events that change molecular content
----
+FishBehavior.cs: schooling, light-following, atom curiosity, player evasion
+
+SharkBehavior.cs: patrol, hunt, and kill fish using proximity checks
+
+Procedural aging, death, float-up system
+
+New: ButterflyBehavior.cs, ScarabBehavior.cs with particle trails
+
+🌿 Environment Dynamics
+
+Temperature/pressure system using depth-based AnimationCurve
+
+Comfortable zones for species: flee cold/hot zones
+
+Environmental stimuli: follow spotlights, flee player, react to atoms
+
+Organisms prefer ideal depths and self-correct altitude
+
+Insect life adapts to terrain height, humidity zones, and sunlight
+
+🌊 Visual & Audio Artistry
+
+Atom resonance, glow, and floating particles in the air around butterflies
+
+Music generation from atom motion (procedural synth)
+
+Morphing effects during mutation
+
+Bubble trails, underwater fog, seaweed motion, particle ambiance
+
+Cinematic transitions, shader pulses, and energy distortion
+
+Full voice intro sequence with camera travelling & poetic narration
+
+🌐 Multiplayer-Ready (Photon Fusion)
+
+Networked spawning, mutation, destruction
+
+Player sync and interactions (heat ray, magnet, scan)
+
+Modular startup with FusionBootstrapDebugGUI.cs
+
+Scene persistence for player/atom/organism states
+
+⚡️ Intro & Preloading System
+
+Full IntroCinematic.cs handling camera travelling, text fades, and music
+
+VoiceOnControl.cs: triggers voice narration at player controller activation
+
+Preloading system for all heavy assets: fish, butterfly, scarab, molecules
+
+Built-in memory unload after intro for performance optimization
+
+🐻 Land & Air Lifeforms
+
+🐜 ButterflyBehavior.cs
+
+Flies within bounded zone
+
+Reacts to light and nearby atoms
+
+Leaves glowing particle trails (atom particles)
+
+Avoids player & strong wind zones
+
+🦏 ScarabBehavior.cs
+
+Walks on terrain using raycasts
+
+Patrols, reacts to player & edible atoms
+
+Joins other scarabs in swarm patterns
+
+Burrows or dies over time
+
 ☢️ Atomic Bomb Module (Experimental)
-Un module immersif pour simuler une explosion atomique sous-marine dans le style de Crysis ou Half-Life.
-Parfait pour les tests de réactions extrêmes, anomalies d’énergie ou gameplay basé sur l’instabilité atomique.
 
-🔩 Scripts
-Script	Description
-AtomMagnet.cs	Attire tous les atomes dans un rayon défini via un champ magnétique simulé (magneticForce, radius). Utilise Rigidbody pour des interactions physiques crédibles.
-AtomicExplosionTrigger.cs (à venir)	Déclenche une explosion atomique après accumulation d'énergie ou surcharge. Peut être lié à une interface UI ou une séquence cinématique.
-🔬 Fonctionnement
-Chaque frame (FixedUpdate), le script scanne tous les objets tagués Atom.
+AtomMagnet.cs: attract atoms via physical magnetic field
 
-Si un atome est dans le rayon défini (radius), il subit une force magnétique d’attraction vers le centre du champ.
+AtomicExplosionTrigger.cs: triggers explosion after overload
 
-Combine bien avec des effets visuels (VFX, glow, surpression, onde de choc).
+Shockwave, glow, particle burst, radius heat
 
-Peut être synchronisé en réseau avec Fusion pour destruction synchronisée sur tous les clients.
-# 🔮 Non-Euclidean Quantum Portal System
+Syncs across all clients via Fusion networking
 
-This system allows for **non-Euclidean space traversal** inside Unity by connecting two portals that simulate:
+🔮 Non-Euclidean Quantum Portal System
 
-- 📍 Circular space folding (loop back to origin)
-- 🔄 Spatial axis rotation (changes movement orientation)
-- 🧠 Perception shifts (support for quantum camera tricks later)
+🚀 Features
 
-## 🚀 Features
+Linked portals with circular space folding
 
-- **Linked Portals**: When the player enters one portal, they are transported to the linked one with a rotation offset.
-- **Axis Rotation**: You can apply rotation during teleportation to simulate bending space.
-- **Topological Looping**: Portals can connect back to themselves or form complex shapes.
+Axis rotation offset to bend space
 
-## 📦 How to Use
+Re-entry loops, recursive geometry
 
-1. **Setup Portals**:
-    - Create two GameObjects (`Portal_A`, `Portal_B`).
-    - Add the `QuantumPortal.cs` script to both.
-    - Assign each other's `linkedPortal` field in the Inspector.
+Designed to break traditional Euclidean travel
 
-2. **Collider**:
-    - Add a `BoxCollider` or `SphereCollider` to each portal.
-    - Set it to **Trigger**.
+📁 Key Scripts Overview
 
-3. **Player**:
-    - Tag your player as `"Player"`.
-    - Make sure the player uses a `CharacterController` or Rigidbody for clean teleportation.
+Script
 
-4. **Optional Rotation**:
-    - You can define a custom `Vector3` rotation offset in the script to simulate axis bending.
+Purpose
 
-## 🧪 Future Extensions
+Atom.cs
 
-- Non-linear time delay
-- Visual distortion shaders on entry
-- Multi-angle camera rendering (quantum superposition style)
+Core identity, mass, charge, behavior
 
-## 🧠 Notes
+LivingOrganism.cs
 
-This portal system is inspired by **quantum spatial anomalies** and aims to break traditional Euclidean rules inside a 3D environment.
+Base class for emergent life
 
----
+FishBehavior.cs
 
-Created with 💡 by Light | Eldora Simulation
+Underwater AI: schooling, stimuli, depth logic
 
-🧠 Extensions possibles
-Barre de charge UI (type Halo, Metro Exodus)
+ButterflyBehavior.cs
 
-Effets de distorsion, lumière, et onde de choc en shader
+Flying insect AI with trail particles
 
-Système de sécurité désactivable ou compte à rebours
+ScarabBehavior.cs
 
-Détection de masse atomique dans une zone → instabilité → boum 💥
+Ground insect AI with terrain adherence
 
-## 📁 Key Scripts Overview
+SharkBehavior.cs
 
-| Script                       | Purpose                                        |
-|-----------------------------|------------------------------------------------|
-| `Atom.cs`                   | Core logic: identity, energy, responses        |
-| `LivingOrganism.cs`         | First stage of lifeform, can mutate           |
-| `FishBehavior.cs`           | Schooling AI, stimuli response, temperature    |
-| `SharkBehavior.cs`          | Predator AI: patrol, chase, attack             |
-| `AtomMagnet.cs`             | Pull/push atoms with forces                    |
-| `ThermalRay.cs`             | Raycast heat/cool atoms                       |
-| `AtomMusicSynth.cs`         | Procedural audio from atom velocity           |
-| `AtomSpawner.cs`            | Randomized atom instancing                    |
-| `AtomVisualizer.cs`         | Atom spread visualization                     |
-| `AtomCreature.cs`           | Morphs into animated creature from atom       |
-| `AtomSimulator.cs`          | Controls reaction logic (fusion/fission)      |
-| `PlayerSpawner.cs`          | Networked player instancing via Fusion        |
-| `FusionBootstrapDebugGUI.cs`| Simple startup GUI and session launcher       |
-| `CameraFollowAtom.cs`       | Follows atom or organism in-game              |
+Predator AI: hunt & kill logic
 
----
+VoiceOnControl.cs
 
-## 🚀 How to Run
+Triggers voice narration
 
-1. Clone the repository
-2. Open in **Unity 2022.3+**
-3. Assign prefabs (atoms, organisms, fish, player)
-4. Configure `FusionBootstrap`, `NetworkRunner`, and network prefab list
-5. Play in **Single Player** or host a **Fusion Session**
-6. Press **B** for bomb 💥 or use tools to interact with atoms
+IntroCinematic.cs
 
----
+Camera travel + text system
 
-## 🤖 Simulation Flow Summary
+AtomMagnet.cs
 
-1. `AtomSpawner` generates atoms randomly in space
-2. Atoms pulse, gain energy, fuse, or become `LivingOrganism`
-3. When energy depletes, the organism mutates into a random evolved prefab (e.g., `Fish` or `Shark`)
-4. Fish group, respond to stimuli, and follow ecosystem rules
-5. Sharks hunt fish via AI, resetting the life cycle
+Magnetic field on atoms
 
----
+AtomicExplosionTrigger.cs
 
-## 📅 Roadmap & Ideas
+Massive explosion trigger
 
-- ✨ Fish reproduction + eggs
-- ❄️ Advanced water temperature shaders
-- ✨ Atmospheric transitions (night, heat waves, storms)
-- 🧕 Mutation into humanoid form with player control
-- ⚖️ Chemistry reactions from nearby molecules
-- 🎨 UI dashboard: inspect atoms, see structure, view mutation tree
-- ✨ NPC jellyfish, plankton, or bio-luminescent entities
-- 🌐 Networked player syncing and energy share
+QuantumPortal.cs
 
-## 🧬 Creature Interaction: Communication & Reproduction (New)
-Bioluminescent organisms (like jellyfish) now exhibit communication behaviors via pulsing lights during night cycles.
+Non-Euclidean teleportation
 
-When two compatible creatures come close, they can emit synchronized pulses to simulate interaction.
+FusionBootstrapDebugGUI.cs
 
-If certain conditions are met (e.g., proximity + energy + time), a new offspring is instantiated in the simulation.
+Network startup UI
 
-Includes:
+AtomMusicSynth.cs
 
-Glow-based signaling system
+Synth music from atom movement
 
-Local reproduction logic with random spawn offset
+🚀 How to Run
 
-Modular system for future: gender/pheromones/behaviors
+Clone the repository
 
-This system opens doors to emergent ecosystems, where life spreads, signals, and adapts in your simulated ocean.
+Open in Unity 2022.3+ (URP compatible)
 
----
+Assign prefabs in SimulationManager
 
-## 💼 License
+Setup NetworkRunner, player prefab, and FusionBootstrap
 
-MIT — Use, modify, and remix freely. Credit is appreciated but not mandatory.
+Press Play (Solo or Network Session)
 
-> "What if atoms could dream? This simulation is their journey—from chaos to consciousness."
+Watch the intro, then control the player
 
----
+Interact with atoms, portals, or fire the atomic bomb 💥
 
-Developed with passion by **Maëlik "Light" Renaud** — Solo Developer, Systems Dreamer, Molecular Explorer.
+🌇 Roadmap & Wishlist
 
+✨ Dynamic day/night + seasonal biome logic
+
+💡 Insect reproduction and swarming logic
+
+🚀 Underwater drone scanner tool
+
+🛠️ Atom crafting UI (combine & create molecules)
+
+✨ Procedural terrain + atom caves
+
+🌿 Algae, plankton, and bio-luminescence
+
+✨ Mutation into humanoids with symbolic intelligence
+
+🚀 Genetic tree and trait evolution via UI
+
+🌍 License
+
+MIT — Free to use, remix, and publish. Credit appreciated.
+
+"What if atoms could dream? This simulation is their journey—from chaos to consciousness."
+
+Crafted with soul by Maëlik "Light" Renaud — Solo Dev, Molecular Dreamer, Quantum World Builder.
