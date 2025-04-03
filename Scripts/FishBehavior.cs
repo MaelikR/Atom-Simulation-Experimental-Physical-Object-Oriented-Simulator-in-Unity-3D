@@ -78,11 +78,12 @@ public class FishBehavior : MonoBehaviour
 
         animator = GetComponent<Animator>();
         renderer = GetComponentInChildren<Renderer>();
-      
+        Debug.Log($"Fish {gameObject.name} swimSpeed: {swimSpeed}");
+
         genetics = GetComponent<FishGenetics>();
         if (genetics != null && genetics.dna != null)
         {
-            swimSpeed = genetics.dna.swimSpeed;
+            swimSpeed = Mathf.Max(0.5f, genetics.dna.swimSpeed);
             turnSpeed = genetics.dna.turnSpeed;
             curiosityRadius = genetics.dna.curiosity;
             fleeRadius = genetics.dna.fleeDistance;
@@ -104,6 +105,8 @@ public class FishBehavior : MonoBehaviour
             curiosityRadius = genetics.dna.curiosity;
             fleeRadius = genetics.dna.fleeDistance;
             energyDrainRate = genetics.dna.energyEfficiency;
+            swimSpeed = Mathf.Max(0.5f, genetics.dna.swimSpeed); // Assure une vitesse minimale
+
         }
     }
 
@@ -119,31 +122,34 @@ public class FishBehavior : MonoBehaviour
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, tilt, deadRotationSpeed * Time.fixedDeltaTime));
             return;
         }
-
+        // Calcul de la direction globale
         Vector3 stimuliDir = ComputeStimuliResponse();
         Vector3 groupDir = ComputeGroupBehavior();
-        Vector3 blendedDirection = swimDirection * baseDirectionWeight + groupDir * groupWeight + stimuliDir * stimuliWeight;
+        Vector3 finalDirection = swimDirection * baseDirectionWeight + groupDir * groupWeight + stimuliDir * stimuliWeight;
 
-        swimDirection = Vector3.Slerp(swimDirection, blendedDirection.normalized, 0.1f);
+        // Lissage direction
+        swimDirection = Vector3.Slerp(swimDirection, finalDirection.normalized, turnSpeed * Time.fixedDeltaTime);
         swimDirection.Normalize();
 
-        Vector3 newPosition = rb.position + swimDirection * swimSpeed * Time.fixedDeltaTime;
+        // Mouvement linéaire
+        Vector3 move = swimDirection * swimSpeed * Time.fixedDeltaTime;
+        Vector3 newPosition = rb.position + move;
+
+        // Clampe la hauteur
         float minY = waterSurfaceY - maxDepth;
         float maxY = waterSurfaceY;
         newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
 
-        float idealDepthY = (waterSurfaceY - maxDepth * 0.5f);
-        float verticalCorrection = (idealDepthY - rb.position.y) * 0.1f;
-        newPosition.y += verticalCorrection;
-
         rb.MovePosition(newPosition);
 
-        Vector3 flatDirection = new Vector3(-swimDirection.x, 0f, -swimDirection.z);
-        if (flatDirection.sqrMagnitude > 0.01f)
+        // Rotation vers la direction
+        if (swimDirection.sqrMagnitude > 0.01f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(flatDirection);
+            Quaternion targetRotation = Quaternion.LookRotation(-swimDirection.normalized);
+
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime));
         }
+
     }
 
     void Update()
@@ -155,6 +161,10 @@ public class FishBehavior : MonoBehaviour
         {
             ChooseNewDirection();
             timeSinceLastTurn = 0f;
+        }
+        if (swimDirection.sqrMagnitude < 0.01f)
+        {
+            ChooseNewDirection(); // Remotive le poisson !
         }
 
         energy -= energyDrainRate * Time.deltaTime;
@@ -202,11 +212,13 @@ public class FishBehavior : MonoBehaviour
 
     void ChooseNewDirection()
     {
-        Vector3 randomDir = Random.onUnitSphere;
-        randomDir.y = Mathf.Clamp(randomDir.y, -0.3f, 0.3f);
-        swimDirection = Vector3.Slerp(lastDirection, randomDir, 0.6f);
+        Vector3 randomDir = Random.insideUnitSphere;
+        randomDir.y = Mathf.Clamp(randomDir.y, -0.2f, 0.2f); // pour limiter la montée/descente
+        swimDirection = randomDir.normalized;
         lastDirection = swimDirection;
     }
+
+
 
     Vector3 ComputeGroupBehavior()
     {
