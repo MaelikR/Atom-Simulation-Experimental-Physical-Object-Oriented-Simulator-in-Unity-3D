@@ -18,57 +18,7 @@ Welcome to the **Atom Simulation Project**: an ambitious, evolving Unity-based e
 - **First-person controller** for exploration
 - Interactive atom manipulation (click, raycast, field effects)
 - Procedural spawning and dynamic **organism mutation system**
-☢️ Quantum Anomaly Zone — Time Distortion Field
-This module introduces localized time dilation and compression based on atomic mass. It simulates quantum anomalies in specific zones of the simulation, affecting organisms' behavior, aging, and audio perception.
-
-🌀 Features
-Localized TimeScale Control: Slows down or speeds up time only for organisms inside the anomaly.
-
-Atomic Mass Sensitivity: Organisms experience different rates of time based on their molecular composition (e.g., heavier = slower aging).
-
-Underwater-style Sound Filter: Automatically applies an AudioLowPassFilter to creatures entering the anomaly, creating an immersive muffled audio effect.
-
-Modular and Extensible: Easily plug into any collider zone. Customizable with AnimationCurve to tailor how mass influences time.
-
-🎮 Gameplay Use Cases
-Slow Motion Zones: Simulate temporal anomalies, black holes, stasis fields.
-
-Evolution Pacing: Some organisms evolve faster/slower based on their atomic makeup.
-
-Narrative Portals: Passing through the anomaly can act as a cinematic effect or a puzzle mechanic.
-
-Sound Design: Adds realism and a dreamy atmosphere to slowed-down areas.
-
-🧪 Technical Summary
-Component	Description
-QuantumAnomalyZone.cs	Trigger zone that applies time and audio distortion based on atom mass.
-LivingOrganism.cs	Must expose SetLocalTimeScale() and GetAtomicMass() methods.
-AudioLowPassFilter	Unity built-in component to simulate underwater or dreamlike sound.
-AnimationCurve	Optional curve to map atomic mass to time factor (e.g., light = fast, heavy = slow).
-⚙️ How to Use
-Create a GameObject with a Trigger Collider (e.g., Sphere or Box).
-
-Attach the QuantumAnomalyZone.cs script.
-
-Assign a timeScale value (< 1 to slow down, > 1 to speed up).
-
-Optionally assign a distortion curve to modulate time effect per atomic mass.
-
-Ensure your creatures have a LivingOrganism script with SetLocalTimeScale() and a valid GetAtomicMass().
-
-💡 Tips & Expansion Ideas
-Combine with post-processing effects (Chromatic Aberration, Blur) for full quantum immersion.
-
-Use with Timeline for slowed intros or boss sequences.
-
-Add visual feedback: swirling particles, refractive distortion.
-
-Extend QuantumAnomalyZone to affect atoms individually (e.g., vibrate faster).
-
-“Time bends here... as if the atoms themselves are dreaming.”
-
-Created with 💡 by Maëlik "Light" Renaud
-— Temporal Designer & Molecular Dreamweaver
+  
 ### 🧪 Evolution & Behavior System
 - Atoms can transform into **LivingOrganism.cs** instances
 - Organisms mutate into **fish**, **sharks**, or other life forms
@@ -186,7 +136,57 @@ Created with 💡 by Maëlik "Light" Renaud
 - 🚀 Genetic tree and trait evolution via UI
 
 ---
+☢️ Quantum Anomaly Zone — Time Distortion Field
+This module introduces localized time dilation and compression based on atomic mass. It simulates quantum anomalies in specific zones of the simulation, affecting organisms' behavior, aging, and audio perception.
 
+🌀 Features
+Localized TimeScale Control: Slows down or speeds up time only for organisms inside the anomaly.
+
+Atomic Mass Sensitivity: Organisms experience different rates of time based on their molecular composition (e.g., heavier = slower aging).
+
+Underwater-style Sound Filter: Automatically applies an AudioLowPassFilter to creatures entering the anomaly, creating an immersive muffled audio effect.
+
+Modular and Extensible: Easily plug into any collider zone. Customizable with AnimationCurve to tailor how mass influences time.
+
+🎮 Gameplay Use Cases
+Slow Motion Zones: Simulate temporal anomalies, black holes, stasis fields.
+
+Evolution Pacing: Some organisms evolve faster/slower based on their atomic makeup.
+
+Narrative Portals: Passing through the anomaly can act as a cinematic effect or a puzzle mechanic.
+
+Sound Design: Adds realism and a dreamy atmosphere to slowed-down areas.
+
+🧪 Technical Summary
+Component	Description
+QuantumAnomalyZone.cs	Trigger zone that applies time and audio distortion based on atom mass.
+LivingOrganism.cs	Must expose SetLocalTimeScale() and GetAtomicMass() methods.
+AudioLowPassFilter	Unity built-in component to simulate underwater or dreamlike sound.
+AnimationCurve	Optional curve to map atomic mass to time factor (e.g., light = fast, heavy = slow).
+⚙️ How to Use
+Create a GameObject with a Trigger Collider (e.g., Sphere or Box).
+
+Attach the QuantumAnomalyZone.cs script.
+
+Assign a timeScale value (< 1 to slow down, > 1 to speed up).
+
+Optionally assign a distortion curve to modulate time effect per atomic mass.
+
+Ensure your creatures have a LivingOrganism script with SetLocalTimeScale() and a valid GetAtomicMass().
+
+💡 Tips & Expansion Ideas
+Combine with post-processing effects (Chromatic Aberration, Blur) for full quantum immersion.
+
+Use with Timeline for slowed intros or boss sequences.
+
+Add visual feedback: swirling particles, refractive distortion.
+
+Extend QuantumAnomalyZone to affect atoms individually (e.g., vibrate faster).
+
+“Time bends here... as if the atoms themselves are dreaming.”
+
+Created with 💡 by Maëlik "Light" Renaud
+— Temporal Designer & Molecular Dreamweaver
 ## 🌍 License
 **MIT** — Free to use, remix, and publish. Credit appreciated.
 
