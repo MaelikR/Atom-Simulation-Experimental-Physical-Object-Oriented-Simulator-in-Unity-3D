@@ -157,12 +157,6 @@ Narrative Portals: Passing through the anomaly can act as a cinematic effect or 
 
 Sound Design: Adds realism and a dreamy atmosphere to slowed-down areas.
 
-🧪 Technical Summary
-Component	Description
-QuantumAnomalyZone.cs	Trigger zone that applies time and audio distortion based on atom mass.
-LivingOrganism.cs	Must expose SetLocalTimeScale() and GetAtomicMass() methods.
-AudioLowPassFilter	Unity built-in component to simulate underwater or dreamlike sound.
-AnimationCurve	Optional curve to map atomic mass to time factor (e.g., light = fast, heavy = slow).
 ⚙️ How to Use
 Create a GameObject with a Trigger Collider (e.g., Sphere or Box).
 
