@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
@@ -41,11 +42,11 @@ public class IntroCinematic : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
 
-        GameObject preloadButterfly = Instantiate(Resources.Load<GameObject>("Prefabs/Butterfly"));
+       // GameObject preloadButterfly = Instantiate(Resources.Load<GameObject>("Prefabs/Butterfly"));
         preloadButterfly.SetActive(false);
         yield return null;
 
-        GameObject preloadAtomFX = Instantiate(Resources.Load<GameObject>("Particles/AtomAura"));
+       // GameObject preloadAtomFX = Instantiate(Resources.Load<GameObject>("Particles/AtomAura"));
         preloadAtomFX.SetActive(false);
         yield return null;
 
