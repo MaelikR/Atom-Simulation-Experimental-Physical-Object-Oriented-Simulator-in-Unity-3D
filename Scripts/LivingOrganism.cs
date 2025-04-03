@@ -31,7 +31,19 @@ public class LivingOrganism : MonoBehaviour
     private float mutationTimer = 0f;
     private Renderer rend;
     private Color originalColor;
+    private float localTimeScale = 1f;
+    private float internalAge = 0f;
 
+    public void SetLocalTimeScale(float scale)
+    {
+        localTimeScale = scale;
+    }
+
+    public float GetAtomicMass()
+    {
+        // Remplace cette valeur par ton système moléculaire réel si disponible
+        return 42f;
+    }
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -77,6 +89,7 @@ public class LivingOrganism : MonoBehaviour
         Wander();
         Pulse();
         DrainEnergy();
+        internalAge += Time.deltaTime * localTimeScale;
 
         if (currentEnergy <= 0f)
         {
