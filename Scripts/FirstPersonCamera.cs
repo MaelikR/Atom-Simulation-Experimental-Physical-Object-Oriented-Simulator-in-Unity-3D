@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using Fusion;
 
 [RequireComponent(typeof(CharacterController))]
-public class FirstPersonCamera : MonoBehaviour, IDamageable
+public class FirstPersonCamera : NetworkBehaviour, IDamageable
 {
     [Header("References")]
     public Transform cameraHolder;
@@ -22,9 +24,10 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
 
     [Header("Health Settings")]
     public float maxHealth = 100f;
-    private float currentHealth;
+    [Networked] private float currentHealth { get; set; }
+    [Networked] private float lastDamageTime { get; set; }
     public float damageCooldown = 1.5f;
-    private float lastDamageTime = -999f;
+
     [Header("Blood FX")]
     public GameObject bloodImpactPrefab;
     public Transform bloodSpawnPoint;
@@ -34,20 +37,35 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
     public GameObject healthBarPrefab;
 
     private HealthBarUI healthBar;
-    private Transform healthBarInstance;
+
     [Header("FX")]
     public GameObject bloodDecalPrefab;
+
+    [Header("Disable For Remote Players")]
+    public List<GameObject> objectsToDisableIfNotLocal;
+    public List<MonoBehaviour> componentsToDisableIfNotLocal;
 
     private CharacterController controller;
     private Vector3 velocity;
     private float xRotation = 0f;
     private bool isSwimming = false;
+    private bool isReady = false;
 
-    void Start()
+    public override void Spawned()
     {
         controller = GetComponent<CharacterController>();
         currentHealth = maxHealth;
-        SpawnHealthBar();
+        lastDamageTime = -999f;
+
+        if (!Object.HasInputAuthority)
+        {
+            controller.enabled = false;
+            DisableRemoteVisuals();
+            return;
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
         if (cameraTransform == null)
             cameraTransform = Camera.main.transform;
@@ -55,8 +73,22 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
         if (cameraHolder == null)
             cameraHolder = cameraTransform.parent;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SpawnHealthBar();
+
+        isReady = true;
+    }
+
+    void DisableRemoteVisuals()
+    {
+        foreach (GameObject go in objectsToDisableIfNotLocal)
+        {
+            if (go != null) go.SetActive(false);
+        }
+
+        foreach (MonoBehaviour comp in componentsToDisableIfNotLocal)
+        {
+            if (comp != null) comp.enabled = false;
+        }
     }
 
     public void TakeDamage(float amount, GameObject source = null)
@@ -66,10 +98,11 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
         currentHealth -= amount;
         lastDamageTime = Time.time;
 
-     
-
-        SpawnBloodFX();
-        bloodStepSpawner?.Activate();
+        if (Object.HasInputAuthority)
+        {
+            SpawnBloodFX();
+            bloodStepSpawner?.Activate();
+        }
 
         if (currentHealth <= 0f)
         {
@@ -92,27 +125,23 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
         blood.transform.localScale *= Random.Range(0.8f, 1.2f);
     }
 
-
     void Die()
     {
-        Debug.Log("Player is dead!");
-        StartCoroutine(Respawn());
+        if (Object.HasInputAuthority)
+            Debug.Log("Player is dead!");
+
+        Runner.StartCoroutine(Respawn());
     }
 
     void SpawnHealthBar()
     {
-        if (healthBarPrefab == null)
-        {
-      
-            return;
-        }
+        if (healthBarPrefab == null) return;
 
         var ui = Instantiate(healthBarPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
         healthBar = ui.GetComponent<HealthBarUI>();
         if (healthBar != null)
             healthBar.Setup(transform, maxHealth);
     }
-
 
     IEnumerator Respawn()
     {
@@ -122,21 +151,17 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
 
         if (respawnPoint != null)
             transform.position = respawnPoint.position;
-        if (healthBar != null)
-        {
-            healthBar.UpdateHealth(currentHealth);
 
-        }
+        if (healthBar != null)
+            healthBar.UpdateHealth(currentHealth);
         else
-        {
-      
             SpawnHealthBar();
-        }
     }
 
     void Update()
     {
-        if (Time.timeScale == 0f) return;
+        if (!isReady || !Object.HasInputAuthority || Time.timeScale == 0f) return;
+
         if (healthBar != null)
             healthBar.UpdateHealth(currentHealth);
 
@@ -169,28 +194,20 @@ public class FirstPersonCamera : MonoBehaviour, IDamageable
         float z = Input.GetAxis("Vertical");
 
         Vector3 move = transform.right * x + transform.forward * z;
+        Vector3 horizontalMove = move * moveSpeed;
 
-        if (isSwimming)
+        if (controller.isGrounded)
         {
-            float y = 0f;
-            if (Input.GetKey(KeyCode.Space)) y += 1f;
-            if (Input.GetKey(KeyCode.LeftControl)) y -= 1f;
-            move += Vector3.up * y;
-            controller.Move(move * swimSpeed * Time.deltaTime);
-            velocity = Vector3.zero;
+            velocity.y = -1f;
+            if (Input.GetButtonDown("Jump"))
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
         else
         {
-            controller.Move(move * moveSpeed * Time.deltaTime);
-
-            if (controller.isGrounded && velocity.y < 0)
-                velocity.y = -2f;
-
-            if (Input.GetButtonDown("Jump") && controller.isGrounded)
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
             velocity.y += gravity * Time.deltaTime;
-            controller.Move(velocity * Time.deltaTime);
         }
+
+        Vector3 finalMove = horizontalMove + Vector3.up * velocity.y;
+        controller.Move(finalMove * Time.deltaTime);
     }
 }
