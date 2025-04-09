@@ -60,6 +60,16 @@ public class SharkBehavior : MonoBehaviour
         if (animator != null)
             animator.SetFloat("Speed", currentTarget != null ? chaseSpeed : patrolSpeed);
     }
+    public QuestManager questManager;
+
+    public void OnDeath()
+    {
+        // Logique de mort (animation, effets, etc.)
+
+        // Marquer la quête comme terminée
+        if (questManager != null)
+            questManager.CompleteQuest("Kill a Megalodon.");
+    }
 
     void FixedUpdate()
     {
