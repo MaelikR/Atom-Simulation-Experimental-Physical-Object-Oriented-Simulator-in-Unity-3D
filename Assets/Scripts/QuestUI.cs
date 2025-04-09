@@ -73,7 +73,7 @@ public class CharacterSheetUI : MonoBehaviour
 
             if (GUI.Button(new Rect(spellRect.x + 190, spellRect.y, 60, 20), "Cast"))
             {
-                player?.CastSpell(spell.Name);
+                player?.ExecuteSpell(spell.Name);
             }
 
             if (spellRect.Contains(Event.current.mousePosition))

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -12,9 +12,10 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
     public Camera fpsCamera;
     public Camera tpsCamera;
     public BloodFootstepSpawner bloodStepSpawner;
-    // Tout en haut dans les variables priv�es :
+    // Tout en haut dans les variables privées :
     private bool isAutoRunning = false;
 
+    [SerializeField] private SpellEffectManager spellEffectManager;
 
 
     [Header("Movement Settings")]
@@ -41,6 +42,12 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
     [Header("Blood FX")]
     public GameObject bloodImpactPrefab;
     public Transform bloodSpawnPoint;
+    // 🔓 Ajoute ceci dans FirstPersonCamera.cs pour exposer les variables au GUI
+    public float CurrentHealth => currentHealth;
+    public bool IsFlying => isFlying;
+    public bool IsSwimming => isSwimming;
+    public bool IsAutoRunning => isAutoRunning;
+    public float MaxHealth => maxHealth;
 
     public Transform respawnPoint;
     public float respawnDelay = 3f;
@@ -70,7 +77,7 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
     {
         if (!Runner.IsRunning || !Object.HasInputAuthority) return;
 
-        animator?.SetTrigger("Fire");
+       // animator?.SetTrigger("Fire");
 
         Runner.Spawn(solarAtomPrefab, castOrigin.position, castOrigin.rotation, Object.InputAuthority);
     }
@@ -176,11 +183,11 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
         if (Input.GetKeyDown(KeyCode.F)) SetCameraMode(!isFPS);
         if (Input.GetKeyDown(KeyCode.A)) FireSolarProjectile();
         if (Input.GetKeyDown(KeyCode.V)) isFlying = !isFlying;
-        // Dans Update(), ajoute �a :
+        // Dans Update(), ajoute ça :
         if (Input.GetKeyDown(KeyCode.R))
             isAutoRunning = !isAutoRunning;
         if (animator != null)
-            animator.SetBool("Fly", isFlying); // 
+            animator.SetBool("Fly", isFlying); // Correct Callback of Animtor "Fly" parameters
         if (healthBar != null)
             healthBar.UpdateHealth(currentHealth);
 
@@ -300,4 +307,37 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
         Vector3 finalMove = horizontalMove + Vector3.up * velocity.y;
         controller.Move(finalMove * Time.deltaTime);
     }
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_CastSpell(string spellName)
+    {
+        ExecuteSpell(spellName);
+    }
+
+    [SerializeField] private List<string> availableSpellNames = new List<string>();
+    public void ExecuteSpell(string spellName)
+    {
+        switch (spellName)
+        {
+            case "Spell of Light":
+                spellEffectManager?.PlayEffect(spellName, firePointLeftHand);
+                currentHealth = Mathf.Min(currentHealth + 25f, maxHealth);
+                if (healthBar != null) healthBar.UpdateHealth(currentHealth);
+                break;
+
+            case "Arcane Blast":
+                spellEffectManager?.PlayEffect(spellName, firePointLeftHand);
+                break;
+
+            case "Stone Shield":
+                Debug.Log("Activating Stone Shield!");
+                spellEffectManager?.PlayEffect(spellName, firePointLeftHand);
+                // Ajoute ici un booléen de protection temporaire si tu veux
+                break;
+
+            default:
+                Debug.LogWarning("Unknown spell: " + spellName);
+                break;
+        }
+    }
+
 }

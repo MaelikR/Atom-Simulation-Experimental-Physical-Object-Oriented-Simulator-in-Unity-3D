@@ -1,35 +1,47 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class CameraCollision : MonoBehaviour
 {
-    [Header("Target à suivre")]
-    public Transform target;
+    [Header("References")]
+    public Transform cameraTransform;
+    public Transform followTarget;
 
-    [Header("Réglages collision")]
-    public float minDistance = 0.5f;
-    public float maxDistance = 4f;
-    public float smoothSpeed = 10f;
-    public float sphereRadius = 0.3f;
-    public LayerMask collisionLayers;
+    [Header("Settings")]
+    public LayerMask collisionMask;
+    public float defaultDistance = 4f;
+    public float minDistance = 1f;
+    public float collisionRadius = 0.3f;
+    public float cameraLerpSpeed = 8f;
 
-    private Vector3 currentVelocity;
+    private float currentDistance;
+
+    void Start()
+    {
+        currentDistance = defaultDistance;
+    }
 
     void LateUpdate()
     {
-        if (!target) return;
+        if (followTarget == null || cameraTransform == null) return;
 
-        Vector3 direction = (transform.position - target.position).normalized;
-        Vector3 origin = target.position + direction * sphereRadius;
-        float targetDistance = maxDistance;
+        Vector3 origin = followTarget.position;
+        Vector3 desiredCameraPos = origin - followTarget.forward * defaultDistance;
 
-        // SphereCast pour éviter les traversées de terrain/objets
-        if (Physics.SphereCast(origin, sphereRadius, direction, out RaycastHit hit, maxDistance, collisionLayers, QueryTriggerInteraction.Ignore))
+        // Check collision
+        if (Physics.SphereCast(origin, collisionRadius, -followTarget.forward, out RaycastHit hit, defaultDistance, collisionMask, QueryTriggerInteraction.Ignore))
         {
-            targetDistance = Mathf.Clamp(hit.distance, minDistance, maxDistance);
+            currentDistance = Mathf.Clamp(hit.distance, minDistance, defaultDistance);
+        }
+        else
+        {
+            currentDistance = defaultDistance;
         }
 
-        Vector3 desiredPosition = target.position + direction * targetDistance;
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref currentVelocity, Time.deltaTime * smoothSpeed);
-        transform.LookAt(target);
+        // Move camera
+        Vector3 targetPos = origin - followTarget.forward * currentDistance;
+        cameraTransform.position = Vector3.Lerp(cameraTransform.position, targetPos, Time.deltaTime * cameraLerpSpeed);
+
+        // Always look at target
+        cameraTransform.LookAt(origin);
     }
 }

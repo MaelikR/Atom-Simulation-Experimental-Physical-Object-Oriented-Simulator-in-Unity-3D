@@ -22,7 +22,7 @@ public class SpellHotbarUI : MonoBehaviour
             if (Input.GetKeyDown(hotkeys[i]))
             {
                 string spellName = characterStats.unlockedSpells[i].Name;
-                player.CastSpell(spellName);
+                player.ExecuteSpell(spellName);
             }
         }
     }
@@ -42,7 +42,11 @@ public class SpellHotbarUI : MonoBehaviour
             if (i < characterStats.unlockedSpells.Count)
             {
                 var spell = characterStats.unlockedSpells[i];
-                GUI.Box(boxRect, spell.Name, hotbarStyle);
+                if (spell.Icon != null)
+                    GUI.DrawTexture(boxRect, spell.Icon, ScaleMode.ScaleToFit);
+                else
+                    GUI.Box(boxRect, spell.Name, hotbarStyle);
+
                 GUI.Label(new Rect(boxRect.x + 4, boxRect.y + 42, 50, 20), hotkeys[i].ToString().Replace("Alpha", ""), keyStyle);
             }
             else
