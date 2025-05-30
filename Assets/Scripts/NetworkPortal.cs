@@ -1,8 +1,7 @@
+// NetworkPortal.cs
 using UnityEngine;
 using Fusion;
 using Fusion.Sockets;
-using System.Collections;
-using UnityEngine.SceneManagement; // ‚Üê celle-ci !
 
 public class NetworkPortal : NetworkBehaviour
 {
@@ -13,53 +12,38 @@ public class NetworkPortal : NetworkBehaviour
     public float cooldown = 2f;
 
     private bool isTeleporting = false;
-    private NetworkRunner runner;
 
-    private void Start()
+    void OnTriggerEnter(Collider other)
     {
-        runner = FindObjectOfType<NetworkRunner>();
-        if (runner == null)
+        if (!Object.HasInputAuthority || isTeleporting) return;
+        if (!other.CompareTag("Player")) return;
+
+        isTeleporting = true;
+        if (teleportVFX != null)
+            Instantiate(teleportVFX, portalEffectPosition.position, Quaternion.identity);
+
+        Invoke(nameof(LeaveAndJoin), 1.2f); // Petit dÈlai stylÈ avant tÈlÈportation
+    }
+
+    void LeaveAndJoin()
+    {
+        NetworkRunner runner = FindObjectOfType<NetworkRunner>();
+        if (runner != null)
+        {
+            runner.Shutdown(true, ShutdownReason.Ok);
+            runner.StartGame(new StartGameArgs
+            {
+                GameMode = GameMode.Shared,
+                SessionName = destinationRoomName,
+                Scene = SceneRef.FromIndex(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex),
+                SceneManager = runner.GetComponent<NetworkSceneManagerDefault>()
+            });
+        }
+        else
         {
             Debug.LogError("No NetworkRunner found in scene");
         }
     }
-
-    private void OnTriggerEnter(Collider other)
-    {
-
-        if (!other.CompareTag("Player")) return;
-        if (!other.CompareTag("Player") || isTeleporting) return;
-        if (teleportVFX != null)
-            Instantiate(teleportVFX, portalEffectPosition.position, Quaternion.identity);
-
-        isTeleporting = true;
-        StartCoroutine(HandleTeleport());
-    }
-
-    private IEnumerator HandleTeleport()
-    {
-        yield return new WaitForSeconds(1.2f);
-
-        if (runner != null)
-        {
-            // Stocke le nom de la prochaine room
-            RoomTransferManager.NextRoomName = destinationRoomName;
-
-            // Garde le RoomLoader actif entre les sc√®nes
-            GameObject loader = new GameObject("RoomTransferLoader");
-
-            loader.AddComponent<RoomTransferManager>();
-            DontDestroyOnLoad(loader);
-            PortalTransferData.EntryPortalName = this.gameObject.name;
-
-            // Shutdown runner actuel
-            yield return runner.Shutdown(true, ShutdownReason.Ok);
-
-            // Recharge la m√™me sc√®ne (ou une sc√®ne interm√©diaire)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
-
 
     public override void FixedUpdateNetwork()
     {

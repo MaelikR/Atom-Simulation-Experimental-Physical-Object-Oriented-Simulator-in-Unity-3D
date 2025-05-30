@@ -1,9 +1,6 @@
-// SwordController_Networked.cs
 using UnityEngine;
-using Fusion;
-using System.Collections;
 
-public class SwordController_Networked : NetworkBehaviour
+public class SwordController_Mono : MonoBehaviour
 {
     [Header("Attack Settings")]
     public Animator animator;
@@ -29,11 +26,10 @@ public class SwordController_Networked : NetworkBehaviour
     public AudioClip criticalHitSound;
 
     private bool isAttacking = false;
-    private float attackDuration = 0.6f;
+    private float attackDuration = 0.6f; // Temps pendant lequel l’attaque est active
 
-    public override void FixedUpdateNetwork()
+    void Update()
     {
-        if (!Object.HasInputAuthority) return;
         if (isAttacking) return;
 
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
@@ -49,10 +45,11 @@ public class SwordController_Networked : NetworkBehaviour
         }
     }
 
-    IEnumerator PerformAttack(bool isHeavy)
+    System.Collections.IEnumerator PerformAttack(bool isHeavy)
     {
         isAttacking = true;
 
+        // Jouer animation
         if (animator)
         {
             if (isHeavy)
@@ -61,18 +58,20 @@ public class SwordController_Networked : NetworkBehaviour
                 animator.SetTrigger(attackAnimations[Random.Range(0, attackAnimations.Length)]);
         }
 
+        // Jouer son
         if (audioSource)
         {
             AudioClip clip = isHeavy ? heavyAttackSound : swordSwingSound;
             if (clip) audioSource.PlayOneShot(clip);
         }
 
-        yield return new WaitForSeconds(0.1f);
+        // Détection de cibles
+        yield return new WaitForSeconds(0.1f); // léger délai avant le hit
 
         Collider[] hits = Physics.OverlapSphere(swordTransform.position, attackRange, enemyLayer);
         foreach (Collider hit in hits)
         {
-            IDamageable damageable = hit.GetComponentInParent<IDamageable>();
+            IDamageable damageable = hit.GetComponent<IDamageable>();
             if (damageable != null)
             {
                 float damage = isHeavy ? heavyAttackDamage : baseDamage;

@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Fusion;
 
-public class HealthBarUI : NetworkBehaviour
+public class HealthBarUI : MonoBehaviour
 {
     [Header("UI")]
     public Slider slider;
@@ -17,15 +16,9 @@ public class HealthBarUI : NetworkBehaviour
     public Color midColor = new Color(1f, 0.65f, 0f); // orange
     public Color lowColor = Color.red;
 
-    private float targetHealth = 100f;
-    private float maxHealth = 100f;
-
     public void Setup(Transform targetTransform, float maxValue)
     {
         target = targetTransform;
-        maxHealth = maxValue;
-        targetHealth = maxValue;
-
         slider.maxValue = maxValue;
         slider.value = maxValue;
         UpdateColor(1f);
@@ -33,9 +26,9 @@ public class HealthBarUI : NetworkBehaviour
 
     public void UpdateHealth(float current)
     {
-        targetHealth = current;
-        slider.value = targetHealth;
-        UpdateColor(targetHealth / maxHealth);
+        slider.value = current;
+        float ratio = current / slider.maxValue;
+        UpdateColor(ratio);
     }
 
     void UpdateColor(float ratio)
@@ -50,7 +43,11 @@ public class HealthBarUI : NetworkBehaviour
             fillImage.color = lowColor;
     }
 
-    public void UpdateValue(float current) => UpdateHealth(current);
+    // Alias rétro-compatible
+    public void UpdateValue(float current)
+    {
+        UpdateHealth(current);
+    }
 
     void LateUpdate()
     {

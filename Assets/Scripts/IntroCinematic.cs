@@ -1,125 +1,86 @@
-
+// IntroCinematicController.cs
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 using System.Collections;
 
 public class IntroCinematic : MonoBehaviour
 {
-    public Camera cinematicCamera;
-    public Transform startPoint;
-    public Transform endPoint;
+    public Transform cameraRig;
+    public Transform cameraTarget;
     public float travelSpeed = 2f;
 
-    public Text dialogueText;
-    public CanvasGroup canvasGroup;
-    public string[] poeticLines;
+    public TextMeshProUGUI introText;
+    public CanvasGroup fadeCanvas;
     public float textDelay = 6f;
 
-
-    public GameObject introUI;
-    public AudioSource backgroundMusic;
-    public AudioClip pianoIntro;
-
-  //  private VoiceOnControl voiceScript;
-    private bool hasStarted = false;
+    [TextArea(3, 10)]
+    public string[] poeticLines = new string[]
+    {
+        "In the beginning, there was silence.",
+        "No sound. No light. Only the weight of possibility.",
+        "From the void, fragments danced — nameless, weightless.",
+        "Atoms — the first whispers of existence.",
+        "They collided, merged, and drifted apart, rewriting chaos.",
+        "Stars were born in the furnace of that ancient dust.",
+        "And from their ashes… came water.",
+        "In water, the great mystery unfolded.",
+        "Molecules learned to breathe. To bond. To dream.",
+        "And somewhere, in a silent ocean…",
+        "Life blinked awake.",
+        "Not with a roar — but with a ripple.",
+        "You are made of that same ancient dust.",
+        "Of atoms that burned in stars, wept in rain, lived in beasts.",
+        "You are… the echo of everything.",
+        "And now…",
+        "The ocean remembers you."
+    };
 
     void Start()
     {
-        StartCoroutine(PreloadAssets());
-
-        cinematicCamera.transform.position = startPoint.position;
-        cinematicCamera.transform.rotation = startPoint.rotation;
-
-        introUI.SetActive(true);
-
-     //   voiceScript = FindObjectOfType<VoiceOnControl>();
-
-        canvasGroup.alpha = 0;
         StartCoroutine(PlayIntro());
-    }
-
-    IEnumerator PreloadAssets()
-    {
-        yield return new WaitForSeconds(0.5f);
-
-       // GameObject preloadButterfly = Instantiate(Resources.Load<GameObject>("Prefabs/Butterfly"));
-        //preloadButterfly.SetActive(false);
-        yield return null;
-
-       // GameObject preloadAtomFX = Instantiate(Resources.Load<GameObject>("Particles/AtomAura"));
-        //preloadAtomFX.SetActive(false);
-        yield return null;
-
-        if (pianoIntro != null && backgroundMusic != null)
-        {
-            backgroundMusic.clip = pianoIntro;
-            backgroundMusic.Play();
-        }
     }
 
     IEnumerator PlayIntro()
     {
-        hasStarted = true;
+        fadeCanvas.alpha = 1;
+        introText.text = "";
 
-        StartCoroutine(ShowPoeticLines());
+        // Fade in
+        yield return StartCoroutine(FadeCanvas(0, 2f));
 
-        float journeyLength = Vector3.Distance(startPoint.position, endPoint.position);
-        float startTime = Time.time;
-
-        while (Vector3.Distance(cinematicCamera.transform.position, endPoint.position) > 0.1f)
-        {
-            float distCovered = (Time.time - startTime) * travelSpeed;
-            float fraction = distCovered / journeyLength;
-            cinematicCamera.transform.position = Vector3.Lerp(startPoint.position, endPoint.position, fraction);
-            cinematicCamera.transform.rotation = Quaternion.Slerp(startPoint.rotation, endPoint.rotation, fraction);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(2f);
-        EndIntro();
+        // Start moving camera while displaying lines
+        StartCoroutine(MoveCamera());
+        yield return StartCoroutine(DisplayPoeticLines());
     }
 
-    IEnumerator ShowPoeticLines()
+    IEnumerator MoveCamera()
+    {
+        while (Vector3.Distance(cameraRig.position, cameraTarget.position) > 0.05f)
+        {
+            cameraRig.position = Vector3.Lerp(cameraRig.position, cameraTarget.position, Time.deltaTime * travelSpeed);
+            yield return null;
+        }
+    }
+
+    IEnumerator DisplayPoeticLines()
     {
         foreach (string line in poeticLines)
         {
-            yield return StartCoroutine(FadeInText(line));
+            introText.text = line;
             yield return new WaitForSeconds(textDelay);
-            yield return StartCoroutine(FadeOutText());
         }
     }
 
-    IEnumerator FadeInText(string line)
+    IEnumerator FadeCanvas(float targetAlpha, float duration)
     {
-        dialogueText.text = line;
+        float startAlpha = fadeCanvas.alpha;
         float t = 0f;
+
         while (t < 1f)
         {
-            t += Time.deltaTime / 1.5f;
-            canvasGroup.alpha = Mathf.SmoothStep(0, 1, t);
+            t += Time.deltaTime / duration;
+            fadeCanvas.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
             yield return null;
         }
-    }
-
-    IEnumerator FadeOutText()
-    {
-        float t = 0f;
-        while (t < 1f)
-        {
-            t += Time.deltaTime / 1.5f;
-            canvasGroup.alpha = Mathf.SmoothStep(1, 0, t);
-            yield return null;
-        }
-        dialogueText.text = "";
-    }
-
-    void EndIntro()
-    {
-        cinematicCamera.gameObject.SetActive(false);
-
-        //voiceScript?.OnPlayerControlActivated();
-        introUI.SetActive(false);
-
-        Resources.UnloadUnusedAssets();
     }
 }

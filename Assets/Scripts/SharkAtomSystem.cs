@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class SharkAtomSystem : MonoBehaviour
@@ -7,9 +7,9 @@ public class SharkAtomSystem : MonoBehaviour
 
     void Start()
     {
-        composition.Add(new Molecule("Water (H2O)", 3, 18.015f, true, "H₂O"));
-        composition.Add(new Molecule("Protein", 20000, 50000f, false, "C137H224N38O42S")); // exemple
-        composition.Add(new Molecule("Calcium", 20, 40.078f, true, "Ca"));
+        composition.Add(new Molecule("Water (H2O)", 3, 18.015f));
+        composition.Add(new Molecule("Protein", 20000, 50000f));
+        composition.Add(new Molecule("Calcium", 20, 40.078f)); // pour les os/cartilage
     }
 
     public float GetTotalMolarMass()

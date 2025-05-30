@@ -60,16 +60,6 @@ public class SharkBehavior : MonoBehaviour
         if (animator != null)
             animator.SetFloat("Speed", currentTarget != null ? chaseSpeed : patrolSpeed);
     }
-    public QuestManager questManager;
-
-    public void OnDeath()
-    {
-        // Logique de mort (animation, effets, etc.)
-
-        // Marquer la quête comme terminée
-        if (questManager != null)
-            questManager.CompleteQuest("Kill a Megalodon.");
-    }
 
     void FixedUpdate()
     {
@@ -86,8 +76,7 @@ public class SharkBehavior : MonoBehaviour
 
         rb.MovePosition(nextPos);
 
-        Quaternion targetRot = Quaternion.LookRotation(-moveDir);
-
+        Quaternion targetRot = Quaternion.LookRotation(moveDir);
         rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, turnSpeed * Time.fixedDeltaTime));
     }
 
@@ -103,10 +92,9 @@ public class SharkBehavior : MonoBehaviour
 
     void ChooseRandomDirection()
     {
-        Vector3 randomDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)).normalized;
-        currentDirection = randomDir;
+        currentDirection = Random.onUnitSphere;
+        currentDirection.y = Mathf.Clamp(currentDirection.y, -0.2f, 0.2f);
     }
-
 
     void ScanForTargets()
     {

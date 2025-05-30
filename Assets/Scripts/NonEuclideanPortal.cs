@@ -1,49 +1,28 @@
 // NonEuclideanPortal.cs
 using UnityEngine;
-using Fusion;
 
-[RequireComponent(typeof(Collider))]
-[RequireComponent(typeof(AudioSource))]
-public class NonEuclideanPortal : NetworkBehaviour
+public class NonEuclideanPortal : MonoBehaviour
 {
-    [Header("Portail de sortie")]
-    public Transform linkedPortal;
-    public Vector3 positionOffset = Vector3.zero;
-    public bool rotateOnTeleport = true;
-
-    [Header("Effets Visuels & Audio")]
-    public ParticleSystem teleportEffect;
-    public AudioClip portalSound;
-
-    [Header("Cooldown & Téléportation")]
-    public float cooldown = 0.5f;
-    private float lastTeleportTime;
-
-    private AudioSource audioSource;
-
-    private void Start()
-    {
-        audioSource = GetComponent<AudioSource>();
-    }
+    public Transform linkedPortal;        // Portail de sortie
+    public Vector3 positionOffset = Vector3.zero; // Offset de sortie
+    public bool rotateOnTeleport = true;  // Appliquer la rotation du portail de sortie
 
     private void OnTriggerEnter(Collider other)
     {
         if (linkedPortal == null || !other.CompareTag("Player")) return;
-        if (Time.time - lastTeleportTime < cooldown) return;
-        lastTeleportTime = Time.time;
 
         CharacterController controller = other.GetComponent<CharacterController>();
         if (controller != null)
         {
+            // Désactiver temporairement le controller pour éviter les conflits
             controller.enabled = false;
+
+            // Téléportation avec offset
             other.transform.position = linkedPortal.position + positionOffset;
 
+            // Rotation non-euclidienne
             if (rotateOnTeleport)
                 other.transform.rotation = linkedPortal.rotation;
-
-            if (teleportEffect != null) teleportEffect.Play();
-            if (audioSource != null && portalSound != null)
-                audioSource.PlayOneShot(portalSound);
 
             controller.enabled = true;
         }
