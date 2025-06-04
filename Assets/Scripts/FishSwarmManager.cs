@@ -17,7 +17,7 @@ public class FishSwarmManager : MonoBehaviour
             pos.y = Mathf.Clamp(pos.y, transform.position.y - 5f, transform.position.y + 5f); // limite verticale
 
             GameObject fish = Instantiate(fishPrefab, pos, Quaternion.identity, transform);
-            fish.GetComponent<FishSwarmBehavior>().player = player;
+           // fish.GetComponent<FishSwarmBehavior>().player = player;
             fishes.Add(fish);
         }
     }
