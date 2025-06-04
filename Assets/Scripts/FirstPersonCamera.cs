@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -199,8 +199,8 @@ public class FirstPersonCamera : NetworkBehaviour, IDamageable
         var ui = Instantiate(healthBarPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
         healthBar = ui.GetComponent<HealthBarUI>();
         var health = GetComponent<PlayerHealth>();
-        if (healthBar != null && health != null)
-            healthBar.Setup(health); // ✅
+       // if (healthBar != null && health != null)
+          //  healthBar.Setup(health); // ✅
 
     }
 
