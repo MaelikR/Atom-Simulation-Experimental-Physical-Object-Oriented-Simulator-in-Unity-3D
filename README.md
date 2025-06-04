@@ -31,11 +31,24 @@ Instead of just solving that question with numbers, the goal is to **turn it int
 
 ## 🛠 Technologies
 
-- **Unity 2022+**
+- **Unity 6000.0.50f1 (LTS)**
+- **HDRP (High Definition Render Pipeline)**
+- **Unity UI Toolkit + TextMeshPro**
 - **C# (Object-Oriented Programming)**
-- **TextMeshPro (UI)**
 - **Custom Physics Models**
-- (Optional Future) **Photon Fusion** for multiplayer simulation sharing
+- **Photon Fusion 2+** (for experimental multiplayer/networked simulations)
+
+---
+
+## 📦 Required Unity Packages
+
+Make sure the following Unity packages are installed:
+
+- ✅ `High Definition RP` (`com.unity.render-pipelines.high-definition`)
+- ✅ `UI Toolkit` and `TextMeshPro`
+- ✅ `Photon Fusion 2` (via Fusion SDK package or Asset Store)
+- ✅ `Input System` (if using newer input bindings)
+- 🔁 Optional: `Cinemachine` for camera control
 
 ---
 
@@ -48,6 +61,11 @@ This project is the **foundation for a weird and beautiful simulator** where phy
 - Create a user-driven sandbox with sliders, toggleable laws, and molecule mutations.
 - Possibly allow networking and players interacting with their own atom fields.
 
---- (ChatGPTo4 tool PR-text x L!GhT)
-"Ready to simulate the invisible.  
-Let’s turn atoms into art."
+---
+
+> (ChatGPTo4 tool PR-text x L!GhT)  
+> "Ready to simulate the invisible.  
+> Let’s turn atoms into art."
+
+---
+
