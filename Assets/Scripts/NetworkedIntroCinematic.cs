@@ -28,7 +28,7 @@ namespace Fusion
         [Header("Config")]
         public float startDelay = 1.5f;
 
-        private VoiceOnControl voiceScript;
+        //private VoiceOnControl voiceScript;
         private bool hasStarted = false;
 
         public void Start()
@@ -52,7 +52,7 @@ namespace Fusion
             cinematicCamera.transform.position = startPoint.position;
             cinematicCamera.transform.rotation = startPoint.rotation;
 
-            voiceScript = FindObjectOfType<VoiceOnControl>();
+          //  voiceScript = FindObjectOfType<VoiceOnControl>();
 
             StartCoroutine(PreloadAssets());
             StartCoroutine(PlayIntro());
@@ -134,7 +134,7 @@ namespace Fusion
         {
             cinematicCamera.gameObject.SetActive(false);
             playerController.SetActive(true);
-            voiceScript?.OnPlayerControlActivated();
+            //voiceScript?.OnPlayerControlActivated();
             introUI.SetActive(false);
             Resources.UnloadUnusedAssets();
         }
