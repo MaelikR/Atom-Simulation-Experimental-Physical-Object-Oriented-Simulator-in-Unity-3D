@@ -68,4 +68,16 @@ This project is the **foundation for a weird and beautiful simulator** where phy
 > Let’s turn atoms into art."
 
 ---
+graph TD
+  AtomSpawner --> Atom
+  Atom --> AtomFission
+  AtomFission --> ParticleSystem
+  AtomFission --> Rigidbody
+  Atom --> AtomUIController
+  Atom --> AtomForceManager
+  Atom --> AtomMusicSynth
+  Atom --> AtomStabilityChecker
+  AtomVisualizer --> Atom
+  AtomVisualizer --> LivingOrganism
+  LivingOrganism --> MutationSystem
 
