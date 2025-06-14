@@ -70,13 +70,16 @@ This project is the **foundation for a weird and beautiful simulator** where phy
 ---
 graph TD
   AtomSpawner --> Atom
+  
   Atom --> AtomFission
+ 
   AtomFission --> ParticleSystem
   AtomFission --> Rigidbody
   Atom --> AtomUIController
   Atom --> AtomForceManager
   Atom --> AtomMusicSynth
   Atom --> AtomStabilityChecker
+ 
   AtomVisualizer --> Atom
   AtomVisualizer --> LivingOrganism
   LivingOrganism --> MutationSystem
